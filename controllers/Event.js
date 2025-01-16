@@ -71,7 +71,7 @@ export const getEvents = async (req, res) => {
       eventName: eventsData[event.eventId.toString()],
     }));
 
-    res.status(200).json({  
+    res.status(200).json({
       status: "OK",
       message: "Events fetched successfully!",
       events: { events },
@@ -157,26 +157,28 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
     }
 
     let alreadyPaid = false;
-    let id = -1;
+    let pendingPaymentId = null;
+
     user.workshopPayments.forEach((payment) => {
       if (
         payment.workshopId === req.body.workshopId &&
-        payment.status === "PENDING" &&
-        !payment.screenshot &&
         payment.transactionId === req.body.transactionId &&
-        payment.paymentMobile === req.body.paymentMobile
+        payment.paymentMobile === req.body.paymentMobile &&
+        payment.status === "PENDING" &&
+        !payment.screenshot
       ) {
         alreadyPaid = true;
-        id = payment.id;
+        pendingPaymentId = payment.id;
       } else if (
         payment.workshopId === req.body.workshopId &&
-        payment.status !== "FAILURE"
+        payment.status === "SUCCESS"
       ) {
         alreadyPaid = true;
       }
     });
 
-    if (alreadyPaid && id === -1) {
+    // If user has a successful payment, reject request
+    if (alreadyPaid && !pendingPaymentId) {
       return res.status(409).json({
         status: "error",
         error: "Conflict",
@@ -264,45 +266,47 @@ export const workshopPaymentScreenshot = async (req, res) => {
     return res.status(500).json({
       status: "error",
       error: `Something went wrong.\n${error.message}`,
-      message: "Internal server error",
+      message: "Internal server error in screenshot",
     });
   }
 };
 export const getWorkshops = async (req, res) => {
   try {
-      const user = await prisma.user.findUnique({
-          where: {
-              id: req.id
-          },
-          include: {
-              workshops: true
-          }
-      })
-      if (!user) {
-          return res.status(409).json({
-              status: "error",
-              message: "Invalid User"
-          });
-      }
-      const workshopsData = JSON.parse(fs.readFileSync('workshops.json', 'utf-8'))
-      const workshops = user.workshops.map(workshop => {
-          return {
-              workshopId: workshop.workshopId,
-              workshopName: workshopsData[workshop.workshopId.toString()]
-          }
-      })
-      return res.status(200).json({
-          status: "success",
-          message: "Workshop fetched successfully",
-          data: {
-              workshops: workshops
-          }
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.id,
+      },
+      include: {
+        workshops: true,
+      },
+    });
+    if (!user) {
+      return res.status(409).json({
+        status: "error",
+        message: "Invalid User",
       });
+    }
+    const workshopsData = JSON.parse(
+      fs.readFileSync("workshops.json", "utf-8")
+    );
+    const workshops = user.workshops.map((workshop) => {
+      return {
+        workshopId: workshop.workshopId,
+        workshopName: workshopsData[workshop.workshopId.toString()],
+      };
+    });
+    return res.status(200).json({
+      status: "success",
+      message: "Workshop fetched successfully",
+      data: {
+        workshops: workshops,
+      },
+    });
   } catch (error) {
-      return res.status(500).json({
-          status: "error",
-          message: error.message,
-          details: error
-      });
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+      details: error,
+    });
   }
-}
+};
