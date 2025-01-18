@@ -23,7 +23,7 @@ import {
   workshopPaymentList,
   fetchQueries,
   setQueryReplied,
-} from "../controllers/adminController.js";
+} from "../controllers/admin.js";
 
 import auth from "../middlewares/adminAuth.js";
 router.post("/login", loginValidation, login);
