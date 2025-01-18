@@ -1,5 +1,5 @@
 import express from "express";
-import auth from "../middlewares/aadminAuth.js";
+import auth from "../middlewares/adminAuth.js";
 import upload from "../middlewares/upload.js";
 import {
   
@@ -30,7 +30,7 @@ import {
 import { profile } from "../controllers/Auth.js";
 
 
-const AdminRouter = express.Router();
+const router = express.Router();
 
 // Define your routes here
 
@@ -59,4 +59,4 @@ router.post(
 );
 
 
-export default AdminRouter;
+export default router;
