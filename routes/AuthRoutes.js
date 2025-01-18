@@ -55,7 +55,7 @@ router.post(
   resetPasswordValidation,
   forgotPasswordReset
 );
-router.post("/login", loginValidation, Login);
+router.post("/login", Login);
 router.put("/change-password", auth, changePasswordValidation, changePassword);
 router.get("/profile", auth, profile);
 router.post("/event-register", auth, eventRegisterValidation, eventRegister);

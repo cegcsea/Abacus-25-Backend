@@ -20,10 +20,13 @@ export const login = async (req, res) => {
     if (!admin) {
       return res.status(404).json({ message: "Admin not Found" });
     }
-    const validPassword = await bcrypt.compare(
-      req.body.password,
-      admin.password
-    );
+   
+    const validPassword = await bcrypt.compare(req.body.password, admin.password);
+console.log("Received Password:", req.body.password);
+console.log("Stored Password Hash:", admin.password);
+console.log("Password Valid:", validPassword);
+
+    
     if (!validPassword) {
       return res.status(401).json({ message: "Invalid Password. Try Again" });
     }
@@ -31,6 +34,8 @@ export const login = async (req, res) => {
       { id: admin.id, role: "ADMIN" },
       process.env.JWTPRIVATEKEY
     );
+    console.log("Generated Token:", token); // Log the token
+    
 
     return res.status(200).json({ message: "Login successful", token: token });
   } catch (error) {
@@ -77,45 +82,46 @@ export const addAdmin = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    // Ensure you're using `req.params.id`
-    console.log("Admin ID: ", req.params.id);
+    console.log(req.params.id);
     const admin = await prisma.admin.findUnique({
       where: {
-        id: parseInt(req.params.id),  // Convert to integer
+        id: parseInt(req.params.id), 
       },
     });
+    
 
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    // Check if the password is correct
-    const validPassword = await bcrypt.compare(req.body.password, admin.password);
+    //if password doesn't match
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      admin.password
+    );
     if (!validPassword) {
       return res.status(401).json({ message: "Wrong Password. Try Again" });
     }
 
-    // If old and new passwords are the same
-    if (req.body.password === req.body.newPassword) {
-      return res.status(400).json({ message: "Old and new password cannot be the same" });
+    //if old and new password are same
+    if (req.body.password == req.body.newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Old and new password cannot be same" });
     }
 
-    // Hash the new password and update it
+    //valid old password
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
-    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
-
+    const password = await bcrypt.hash(req.body.newPassword, salt);
     await prisma.admin.update({
-      where: { id: parseInt(req.params.id) },
-      data: { password: hashedPassword },
+      where: {
+        id: req.id,
+      },
+      data: {
+        password: password,
+      },
     });
-
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
-    console.error(error);  // Log the error for debugging
     return res.status(500).json({ message: error.message, error: error });
   }
 };
-
 
 export const pendingWorkshopsPayments = async (req, res) => {
   try {
