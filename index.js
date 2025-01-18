@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import morgan from "morgan";
 import AuthRouter from "./routes/AuthRoutes.js";
-
+import AdminRouter from "./routes/adminRoutes.js";
 const app = express();
 const prisma = new PrismaClient();
 
@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/user", AuthRouter);
+app.use("/admin", AdminRouter);
 app.listen(port, () => {
   console.log("Running on port:", port);
 });
