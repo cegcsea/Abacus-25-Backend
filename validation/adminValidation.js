@@ -14,9 +14,7 @@ const loginSchema = Joi.object({
 });
 
 const adminSchema = Joi.object({
-    name: Joi.string().required().messages({
-        'string.empty': 'Name is required.'
-    }),
+  
     email: Joi.string().email().required().messages({
         'string.empty': 'Email is required.',
         'string.base': 'Email must be a string.',
@@ -98,7 +96,7 @@ const setQueryRepliedSchema = Joi.object({
 });
 
 const loginValidation = (req, res, next) => {
-    const { error } = loginSchema.validate(req.body);
+    const { error } = adminSchema.validate(req.body);
     if (error) {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
     }

@@ -278,6 +278,7 @@ export const registerValidation = (req, res, next) => {
 };
 
 export const loginValidation = (req, res, next) => {
+  console.log("Login Request Body:", req.body);
   const { error } = loginSchema.validate(req.body);
   if (error) {
     return res.status(400).json({

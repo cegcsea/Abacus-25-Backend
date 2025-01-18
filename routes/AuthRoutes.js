@@ -11,6 +11,7 @@ import {
   updateProfileValidation,
   queryValidation,
 } from "../validation/userValidation.js";
+
 import {
   getRegistrationLink,
   Register,

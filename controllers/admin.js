@@ -77,44 +77,45 @@ export const addAdmin = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
+    // Ensure you're using `req.params.id`
+    console.log("Admin ID: ", req.params.id);
     const admin = await prisma.admin.findUnique({
       where: {
-        id: req.id,
+        id: parseInt(req.params.id),  // Convert to integer
       },
     });
 
-    //if password doesn't match
-    const validPassword = await bcrypt.compare(
-      req.body.password,
-      admin.password
-    );
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Check if the password is correct
+    const validPassword = await bcrypt.compare(req.body.password, admin.password);
     if (!validPassword) {
       return res.status(401).json({ message: "Wrong Password. Try Again" });
     }
 
-    //if old and new password are same
-    if (req.body.password == req.body.newPassword) {
-      return res
-        .status(400)
-        .json({ message: "Old and new password cannot be same" });
+    // If old and new passwords are the same
+    if (req.body.password === req.body.newPassword) {
+      return res.status(400).json({ message: "Old and new password cannot be the same" });
     }
 
-    //valid old password
+    // Hash the new password and update it
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
-    const password = await bcrypt.hash(req.body.newPassword, salt);
+    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+
     await prisma.admin.update({
-      where: {
-        id: req.id,
-      },
-      data: {
-        password: password,
-      },
+      where: { id: parseInt(req.params.id) },
+      data: { password: hashedPassword },
     });
+
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
+    console.error(error);  // Log the error for debugging
     return res.status(500).json({ message: error.message, error: error });
   }
 };
+
 
 export const pendingWorkshopsPayments = async (req, res) => {
   try {
@@ -163,12 +164,10 @@ export const pendingWorkshopsPayments = async (req, res) => {
       });
     });
 
-    return res
-      .status(200)
-      .json({
-        message: "Pending Payment List fetched successfully",
-        data: pendingPayments,
-      });
+    return res.status(200).json({
+      message: "Pending Payment List fetched successfully",
+      data: pendingPayments,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message, error: error });
   }
@@ -197,12 +196,10 @@ export const workshopUnpaid = async (req, res) => {
         mobile: true,
       },
     });
-    return res
-      .status(200)
-      .json({
-        message: "Users unpaid for the workshop",
-        data: usersWithoutPayments,
-      });
+    return res.status(200).json({
+      message: "Users unpaid for the workshop",
+      data: usersWithoutPayments,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message, error: error });
   }
@@ -242,11 +239,9 @@ export const workshopCashPayment = async (req, res) => {
     ).email;
     await sendEmail(userEmail, subject, text);
 
-    res
-      .status(200)
-      .json({
-        message: "Cash Payment done successful and workshop registered",
-      });
+    res.status(200).json({
+      message: "Cash Payment done successful and workshop registered",
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, error });
   }
@@ -358,12 +353,10 @@ export const workshopRegistrationList = async (req, res) => {
         year: true,
       },
     });
-    res
-      .status(200)
-      .json({
-        message: "Workshop Registration List fetched successfully",
-        data: registrationList,
-      });
+    res.status(200).json({
+      message: "Workshop Registration List fetched successfully",
+      data: registrationList,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, error });
   }
@@ -423,12 +416,10 @@ export const workshopPaymentList = async (req, res) => {
         };
       });
     });
-    res
-      .status(200)
-      .json({
-        message: "Workshop Payment List fetched successfully",
-        data: paymentList,
-      });
+    res.status(200).json({
+      message: "Workshop Payment List fetched successfully",
+      data: paymentList,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, error });
   }
