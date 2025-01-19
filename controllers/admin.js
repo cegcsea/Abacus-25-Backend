@@ -20,13 +20,15 @@ export const login = async (req, res) => {
     if (!admin) {
       return res.status(404).json({ message: "Admin not Found" });
     }
-   
-    const validPassword = await bcrypt.compare(req.body.password, admin.password);
-console.log("Received Password:", req.body.password);
-console.log("Stored Password Hash:", admin.password);
-console.log("Password Valid:", validPassword);
 
-    
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      admin.password
+    );
+    console.log("Received Password:", req.body.password);
+    console.log("Stored Password Hash:", admin.password);
+    console.log("Password Valid:", validPassword);
+
     if (!validPassword) {
       return res.status(401).json({ message: "Invalid Password. Try Again" });
     }
@@ -35,7 +37,6 @@ console.log("Password Valid:", validPassword);
       process.env.JWTPRIVATEKEY
     );
     console.log("Generated Token:", token); // Log the token
-    
 
     return res.status(200).json({ message: "Login successful", token: token });
   } catch (error) {
@@ -85,10 +86,9 @@ export const changePassword = async (req, res) => {
     console.log(req.params.id);
     const admin = await prisma.admin.findUnique({
       where: {
-        id: parseInt(req.params.id), 
+        id: parseInt(req.params.id),
       },
     });
-    
 
     //if password doesn't match
     const validPassword = await bcrypt.compare(
@@ -447,6 +447,7 @@ export const fetchQueries = async (req, res) => {
 };
 
 export const setQueryReplied = async (req, res) => {
+  console.log(req.body.id);
   try {
     await prisma.queries.update({
       where: {
@@ -462,21 +463,12 @@ export const setQueryReplied = async (req, res) => {
   }
 };
 
-
 // Register a new user
 export const Register = async (req, res) => {
   try {
     // Extract user details from request body
-    const {
-      email,
-      name,
-      mobile,
-      year,
-      dept,
-      college,
-      hostCollege,
-      password,
-    } = req.body;
+    const { email, name, mobile, year, dept, college, hostCollege, password } =
+      req.body;
 
     // Validate required fields
     if (
@@ -490,8 +482,8 @@ export const Register = async (req, res) => {
       !password
     ) {
       return res.status(400).json({
-        status: 'error',
-        message: 'All fields are required',
+        status: "error",
+        message: "All fields are required",
       });
     }
 
@@ -499,8 +491,8 @@ export const Register = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid email format',
+        status: "error",
+        message: "Invalid email format",
       });
     }
 
@@ -511,8 +503,8 @@ export const Register = async (req, res) => {
 
     if (existingUser) {
       return res.status(409).json({
-        status: 'error',
-        message: 'User already registered with this email',
+        status: "error",
+        message: "User already registered with this email",
       });
     }
 
@@ -538,24 +530,23 @@ export const Register = async (req, res) => {
     const token = jwt.sign(
       { id: newUser.id },
       process.env.JWTPRIVATEKEY, // Your JWT secret key
-      { expiresIn: '1d' } // Token valid for 1 day
+      { expiresIn: "1d" } // Token valid for 1 day
     );
 
     // Send success response
     return res.status(201).json({
-      status: 'success',
-      message: 'User registered successfully',
+      status: "success",
+      message: "User registered successfully",
       data: {
         abacusId: newUser.id, // Replace with your ID field
         token, // Optional: Admin may not need this token
       },
     });
   } catch (error) {
-    console.error('Error during registration:', error);
+    console.error("Error during registration:", error);
     return res.status(500).json({
-      status: 'error',
-      message: 'Internal server error',
+      status: "error",
+      message: "Internal server error",
     });
   }
 };
-

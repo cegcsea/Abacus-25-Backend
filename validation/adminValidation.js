@@ -1,5 +1,6 @@
 import Joi from 'joi';
 const loginSchema = Joi.object({
+    name: Joi.string().required(),
     email: Joi.string().email().required().messages({
         'string.empty': 'Email is required.',
         'string.base': 'Email must be a string.',
@@ -104,7 +105,7 @@ const loginValidation = (req, res, next) => {
 };
 
 const addAdminValidation = (req, res, next) => {
-    const { error } = adminSchema.validate(req.body);
+    const { error } = loginSchema.validate(req.body);
     if (error) {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
     }

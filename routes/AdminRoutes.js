@@ -2,9 +2,10 @@ import express from "express";
 import auth from "../middlewares/adminAuth.js";
 import upload from "../middlewares/upload.js";
 import {
-  
   loginValidation,
   changePasswordValidation,
+  addAdminValidation,
+  setQueryRepliedValidation,
 } from "../validation/adminValidation.js";
 
 import {
@@ -20,7 +21,7 @@ import {
   workshopPaymentFailure,
   workshopRegistrationList,
   workshopPaymentList,
-  Register
+  Register,
 } from "../controllers/admin.js";
 
 import {
@@ -30,28 +31,31 @@ import {
 } from "../controllers/Event.js";
 import { profile } from "../controllers/Auth.js";
 
-
 const router = express.Router();
 
 // Define your routes here
 
-
-
-router.post("/login",login);
-router.put('/change-password/:id', changePassword);
+router.post("/login", loginValidation, login);
+router.put(
+  "/change-password/:id",
+  auth,
+  changePasswordValidation,
+  changePassword
+);
 router.get("/get-events", auth, getEvents);
-router.post("/add-admin",addAdmin);
+router.post("/add-admin", auth, addAdminValidation, addAdmin);
 router.get("/get-workshops", getWorkshops);
-router.get("/queries",fetchQueries)
-router.post("/register-user",Register)
-router.put("/reply",setQueryReplied)
-router.get("/pendingWorkshopsPayments",pendingWorkshopsPayments)
-router.post('/workshop-unpaid', workshopUnpaid)
-router.post('/workshop-cash-payment', workshopCashPayment)
-router.post('/workshop-payment-success', workshopPaymentSuccess)
-router.post('/workshop-payment-failure', workshopPaymentFailure)
-router.post('/workshop-registration-list',workshopRegistrationList)
-router.post('/workshop-payment-list', workshopPaymentList)
+router.get("/queries", auth, fetchQueries);
+router.get("/set-query-replied/:id", auth, setQueryReplied);
+router.post("/register-user", auth, Register);
+router.put("/reply", auth, setQueryRepliedValidation, setQueryReplied);
+router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
+router.post("/workshop-unpaid", auth, workshopUnpaid);
+router.post("/workshop-cash-payment", auth, workshopCashPayment);
+router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
+router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
+router.post("/workshop-registration-list", auth, workshopRegistrationList);
+router.post("/workshop-payment-list", auth, workshopPaymentList);
 
 router.post(
   "/workshop-payment-screenshot/:workshopPaymentId",
@@ -59,6 +63,5 @@ router.post(
   upload.single("paymentScreenshot"),
   workshopPaymentScreenshot
 );
-
 
 export default router;
