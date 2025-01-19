@@ -461,3 +461,101 @@ export const setQueryReplied = async (req, res) => {
     res.status(500).json({ message: error.message, error });
   }
 };
+
+
+// Register a new user
+export const Register = async (req, res) => {
+  try {
+    // Extract user details from request body
+    const {
+      email,
+      name,
+      mobile,
+      year,
+      dept,
+      college,
+      hostCollege,
+      password,
+    } = req.body;
+
+    // Validate required fields
+    if (
+      !email ||
+      !name ||
+      !mobile ||
+      !year ||
+      !dept ||
+      !college ||
+      !hostCollege ||
+      !password
+    ) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields are required',
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid email format',
+      });
+    }
+
+    // Check if the user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'User already registered with this email',
+      });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(Number(process.env.SALT)); // SALT = 10 (from your .env)
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create a new user
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email: email.toLowerCase(),
+        mobile,
+        year: parseInt(year),
+        dept,
+        college,
+        hostCollege,
+        password: hashedPassword,
+      },
+    });
+
+    // Generate a JWT for the new user
+    const token = jwt.sign(
+      { id: newUser.id },
+      process.env.JWTPRIVATEKEY, // Your JWT secret key
+      { expiresIn: '1d' } // Token valid for 1 day
+    );
+
+    // Send success response
+    return res.status(201).json({
+      status: 'success',
+      message: 'User registered successfully',
+      data: {
+        abacusId: newUser.id, // Replace with your ID field
+        token, // Optional: Admin may not need this token
+      },
+    });
+  } catch (error) {
+    console.error('Error during registration:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
+  }
+};
+

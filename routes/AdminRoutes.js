@@ -19,7 +19,8 @@ import {
   workshopPaymentSuccess,
   workshopPaymentFailure,
   workshopRegistrationList,
-  workshopPaymentList
+  workshopPaymentList,
+  Register
 } from "../controllers/admin.js";
 
 import {
@@ -42,6 +43,7 @@ router.get("/get-events", auth, getEvents);
 router.post("/add-admin",addAdmin);
 router.get("/get-workshops", getWorkshops);
 router.get("/queries",fetchQueries)
+router.post("/register-user",Register)
 router.put("/reply",setQueryReplied)
 router.get("/pendingWorkshopsPayments",pendingWorkshopsPayments)
 router.post('/workshop-unpaid', workshopUnpaid)
