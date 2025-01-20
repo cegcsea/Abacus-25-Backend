@@ -86,7 +86,7 @@ export const changePassword = async (req, res) => {
     console.log(req.params.id);
     const admin = await prisma.admin.findUnique({
       where: {
-        id: parseInt(req.params.id),
+        id: req.id,
       },
     });
 
@@ -457,6 +457,11 @@ export const setQueryReplied = async (req, res) => {
         replied: true,
       },
     });
+    const query = await prisma.queries.findUnique({
+      where: { id: req.body.id }
+    });
+    console.log('Query:', query);
+    
     res.status(200).json({ message: "Updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message, error });

@@ -37,7 +37,7 @@ const router = express.Router();
 
 router.post("/login", loginValidation, login);
 router.put(
-  "/change-password/:id",
+  "/change-password",
   auth,
   changePasswordValidation,
   changePassword
@@ -46,9 +46,8 @@ router.get("/get-events", auth, getEvents);
 router.post("/add-admin", auth, addAdminValidation, addAdmin);
 router.get("/get-workshops", getWorkshops);
 router.get("/queries", auth, fetchQueries);
-router.get("/set-query-replied/:id", auth, setQueryReplied);
+router.put("/set-query-replied", auth, setQueryRepliedValidation,setQueryReplied);
 router.post("/register-user", auth, Register);
-router.put("/reply", auth, setQueryRepliedValidation, setQueryReplied);
 router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
 router.post("/workshop-unpaid", auth, workshopUnpaid);
 router.post("/workshop-cash-payment", auth, workshopCashPayment);
