@@ -5,7 +5,11 @@ import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import sendEmail from "../utils/sendEmail.js"; // Make sure to add the `.js` extension
 import dotenv from "dotenv";
+import { fileURLToPath } from 'url';
 
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 dotenv.config();

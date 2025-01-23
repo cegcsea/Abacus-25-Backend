@@ -6,18 +6,16 @@ import morgan from "morgan";
 import AuthRouter from "./routes/AuthRoutes.js";
 import AdminRouter from "./routes/AdminRoutes.js";
 
-
 const app = express();
 const prisma = new PrismaClient();
 
-
-
-app.use(cors({
-  origin: "http://localhost:3000", // Frontend URL
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
-
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3002"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(morgan("dev"));
@@ -27,7 +25,7 @@ const port = process.env.PORT || 3001;
 app.get("/", (req, res) => {
   res.send("Backend Running!");
 });
-app.use('/admin',AdminRouter);
+app.use("/admin", AdminRouter);
 app.use("/user", AuthRouter);
 console.log("AuthRouter registered at /user");
 
