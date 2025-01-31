@@ -53,6 +53,7 @@ export const Register = async (req, res) => {
             name: req.body.name,
             email: req.params.email,
             mobile: req.body.mobile,
+            hostCollege: req.body.hostCollege,
             year: req.body.year,
             dept: req.body.dept,
             college: req.body.college,
@@ -484,7 +485,7 @@ export const getRegistrationLink = async (req, res) => {
     res.status(200).json({
       status: "OK",
       message: "Registration link sent successfully!",
-      data: { link },
+      data: { link,secretKey },
     });
   } catch (error) {
     console.log("direct");

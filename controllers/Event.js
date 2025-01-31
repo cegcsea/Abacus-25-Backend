@@ -114,7 +114,7 @@ export const workshopRegister = async (req, res) => {
       return;
     }
 
-    await prisma.workshop.create({
+    const data=await prisma.workshop.create({
       data: { userId: req.id, workshopId: req.body.workshopId },
     });
 
@@ -131,7 +131,7 @@ export const workshopRegister = async (req, res) => {
     res.status(200).json({
       status: "OK",
       message: "Workshop registration successful!",
-      data: {},
+      data: {data},
     });
   } catch (error) {
     res.status(500).json({
