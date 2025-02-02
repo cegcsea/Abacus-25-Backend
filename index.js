@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 
 app.use(
   cors({
-    origin: [process.env.BASE_URL],
+    origin: process.env.BASE_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
