@@ -9,13 +9,7 @@ import AdminRouter from "./routes/AdminRoutes.js";
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(
-  cors({
-    origin: process.env.BASE_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 app.use(morgan("dev"));
