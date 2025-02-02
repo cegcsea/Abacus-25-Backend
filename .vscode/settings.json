@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/6bf39402-847f-4492-a81d-2f86910c3dc6/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/abacus-25-backend",
+    "appService.deploySubpath": "."
+}
