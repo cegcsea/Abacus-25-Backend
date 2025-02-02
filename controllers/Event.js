@@ -114,7 +114,7 @@ export const workshopRegister = async (req, res) => {
       return;
     }
 
-    const data=await prisma.workshop.create({
+    const data = await prisma.workshop.create({
       data: { userId: req.id, workshopId: req.body.workshopId },
     });
 
@@ -131,7 +131,7 @@ export const workshopRegister = async (req, res) => {
     res.status(200).json({
       status: "OK",
       message: "Workshop registration successful!",
-      data: {data},
+      data: { data },
     });
   } catch (error) {
     res.status(500).json({
@@ -270,6 +270,50 @@ export const workshopPaymentScreenshot = async (req, res) => {
     });
   }
 };
+
+export const bulkWorkshopPayment = async (req, res) => {
+  try {
+    const { workshopId, transactionId, paymentMobile, userIds } = req.body;
+
+    // Validate unique transaction ID
+    const existingTransaction = await prisma.workshopPayment.findUnique({
+      where: { transactionId },
+    });
+
+    if (existingTransaction) {
+      return res.status(409).json({
+        status: "error",
+        error: "Conflict",
+        message: "Transaction ID already exists",
+      });
+    }
+
+    // Create payment record
+    const workshopPayment = await prisma.workshopPayment.create({
+      data: { workshopId, transactionId, paymentMobile, status: "PENDING" },
+    });
+
+    // Associate multiple users with this payment
+    const userPayments = userIds.map((userId) => ({
+      userId,
+      workshopPaymentId: workshopPayment.id,
+    }));
+    await prisma.userPayment.createMany({ data: userPayments });
+
+    res
+      .status(200)
+      .json({ status: "OK", message: "Bulk payment recorded successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        status: "error",
+        error: error.message,
+        message: "Internal server error",
+      });
+  }
+};
+
 export const getWorkshops = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
