@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,26 +14,27 @@ datasource db {
 }
 
 model User {
-  id           Int                  @id @default(autoincrement())
-  email        String               @unique
-  abacusId     Int                  @unique @default(autoincrement()) @map("abacusid")
-  name         String
-  mobile       String
-  year         Int
-  dept         String
-  college      String
-  accomodation Boolean?
-  password     String
-  hostCollege  String?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @default(now()) @updatedAt
-  token        ForgotPasswordToken?
-  events       Event[]
-  workshops    Workshop[]
+  id                  Int                   @id @default(autoincrement())
+  email               String                @unique
+  abacusId            Int                   @unique @default(autoincrement()) @map("abacusid")
+  name                String
+  mobile              String
+  year                Int
+  dept                String
+  college             String
+  accomodation        Boolean?
+  password            String
+  hostCollege         String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now()) @updatedAt
+  token               ForgotPasswordToken?
+  events              Event[]
+  workshops           Workshop[]
+  WorkshopPaymentUser WorkshopPaymentUser[]  // Keep only this for the many-to-many relationship with WorkshopPayment
 
-  // Fix: Reference bulk payments via UserPayment
-  userPayments UserPayment[]
+  @@map("user")
 }
+
 
 model RegistrationToken {
   id        Int      @id @default(autoincrement())
@@ -84,21 +91,20 @@ model WorkshopPayment {
   verifiedBy    Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
+  admin         Admin?   @relation(fields: [verifiedBy], references: [id])
 
-  admin Admin? @relation(fields: [verifiedBy], references: [id])
+  users  WorkshopPaymentUser[]
 
-  // Fix: Add relation back to User via UserPayment
-  userPayments UserPayment[]
 }
 
-model UserPayment {
-  userId            Int
+model WorkshopPaymentUser {
+  id                Int             @id @default(autoincrement())
   workshopPaymentId Int
+  userId            Int
+  workshopPayment   WorkshopPayment @relation(fields: [workshopPaymentId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
 
-  user            User            @relation(fields: [userId], references: [id])
-  workshopPayment WorkshopPayment @relation(fields: [workshopPaymentId], references: [id])
-
-  @@id([userId, workshopPaymentId]) // Composite Primary Key
+  @@unique([workshopPaymentId, userId]) // Prevent duplicate entries
 }
 
 enum Status {
