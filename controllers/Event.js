@@ -572,30 +572,29 @@ export const getUserWorkshops = async (req, res) => {
     const getBestPayment = (payments) => {
       let bestPayment = null;
       for (const payment of payments) {
-        // Highest priority: SUCCESS
         if (payment.status === "SUCCESS") {
-          return payment; // If we find a "SUCCESS", return it immediately
+          return payment; 
         } else if (
           payment.status === "PENDING" &&
           (bestPayment?.status === "FAILURE" || !bestPayment)
         ) {
-          bestPayment = payment; // If "PENDING" and current best is "FAILURE", update it
+          bestPayment = payment; 
         } else if (!bestPayment) {
-          bestPayment = payment; // Set first payment as the best if no best exists
+          bestPayment = payment; 
         }
       }
       return bestPayment;
     };
 
-    // Step 7: Combine workshops with payment status
+    //  Combine workshops with payment status
     const workshopsWithPayments = workshops.map((workshop) => {
       const payments = paymentsByWorkshop[workshop.workshopId] || [];
-      const bestPayment = getBestPayment(payments); // Use the `getBestPayment` function to get the best payment
+      const bestPayment = getBestPayment(payments); 
 
       return {
         ...workshop,
-        paymentStatus: bestPayment ? bestPayment.status : "No Payment", // Set status
-        paymentDetails: bestPayment || {}, // Include payment details if available
+        paymentStatus: bestPayment ? bestPayment.status : "No Payment", 
+        paymentDetails: bestPayment || {}, 
       };
     });
 
