@@ -30,11 +30,11 @@ model User {
   token               ForgotPasswordToken?
   events              Event[]
   workshops           Workshop[]
-  WorkshopPaymentUser WorkshopPaymentUser[]  // Keep only this for the many-to-many relationship with WorkshopPayment
+  workshopPayments    WorkshopPayment[]
+  WorkshopPaymentUser WorkshopPaymentUser[]
 
   @@map("user")
 }
-
 
 model RegistrationToken {
   id        Int      @id @default(autoincrement())
@@ -94,7 +94,10 @@ model WorkshopPayment {
   admin         Admin?   @relation(fields: [verifiedBy], references: [id])
 
   users  WorkshopPaymentUser[]
+  User   User?                 @relation(fields: [userId], references: [id])
+  userId Int?
 
+  @@map("workshopPayment")
 }
 
 model WorkshopPaymentUser {
