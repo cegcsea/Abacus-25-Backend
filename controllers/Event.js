@@ -530,7 +530,7 @@ export const getUserWorkshops = async (req, res) => {
     //  Fetch bulk payments the user is part of
     const workshopPaymentUsers = await prisma.workshopPaymentUser.findMany({
       where: { userId: userId },
-      include: { workshopPayment: true }, 
+      include: { workshopPayment: true },
     });
     console.log(
       "Workshop Payment Users (Bulk Payments):",
@@ -542,9 +542,9 @@ export const getUserWorkshops = async (req, res) => {
       ...individualPayments,
       ...workshopPaymentUsers.map((record) => ({
         id: record.workshopPaymentId,
-        userId: record.userId, 
-        workshopId: record.workshopPayment.workshopId, 
-        status: record.workshopPayment.status, 
+        userId: record.userId,
+        workshopId: record.workshopPayment.workshopId,
+        status: record.workshopPayment.status,
       })),
     ];
 
@@ -569,15 +569,33 @@ export const getUserWorkshops = async (req, res) => {
     console.log("Payments Grouped by Workshop ID:", paymentsByWorkshop);
 
     //Combine workshops with payment status
+    const getBestPayment = (payments) => {
+      let bestPayment = null;
+      for (const payment of payments) {
+        // Highest priority: SUCCESS
+        if (payment.status === "SUCCESS") {
+          return payment; // If we find a "SUCCESS", return it immediately
+        } else if (
+          payment.status === "PENDING" &&
+          (bestPayment?.status === "FAILURE" || !bestPayment)
+        ) {
+          bestPayment = payment; // If "PENDING" and current best is "FAILURE", update it
+        } else if (!bestPayment) {
+          bestPayment = payment; // Set first payment as the best if no best exists
+        }
+      }
+      return bestPayment;
+    };
+
+    // Step 7: Combine workshops with payment status
     const workshopsWithPayments = workshops.map((workshop) => {
       const payments = paymentsByWorkshop[workshop.workshopId] || [];
-      const bestPayment = payments.length > 0 ? payments[0] : null; 
-      console.log(paymentsByWorkshop[workshop.workshopId], bestPayment);
+      const bestPayment = getBestPayment(payments); // Use the `getBestPayment` function to get the best payment
 
       return {
         ...workshop,
-        paymentStatus: bestPayment ? bestPayment.status : "No Payment", 
-        paymentDetails: bestPayment || {}, 
+        paymentStatus: bestPayment ? bestPayment.status : "No Payment", // Set status
+        paymentDetails: bestPayment || {}, // Include payment details if available
       };
     });
 
