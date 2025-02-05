@@ -389,22 +389,11 @@ export const bulkWorkshopPayment = async (req, res) => {
         message: "Transaction ID already exists",
       });
     }
-
-    const workshopPayment = await prisma.workshopPayment.create({
-      data: {
-        workshopId: parseInt(workshopId),
-        transactionId,
-        paymentMobile,
-        status: "PENDING",
-      },
-    });
-
     let processedUserIds =
       typeof userIds === "string" ? JSON.parse(userIds) : userIds;
     processedUserIds = processedUserIds
       .map((uid) => parseInt(uid, 10))
       .filter((uid) => !isNaN(uid));
-
     const validUsers = await prisma.user.findMany({
       where: { id: { in: processedUserIds } },
       select: { id: true },
@@ -418,8 +407,39 @@ export const bulkWorkshopPayment = async (req, res) => {
         message: "No valid user IDs found in the database",
       });
     }
+    const alreadyRegistered = await prisma.workshop.findMany({
+      where: {
+        userId: { in: validUserIds },
+        workshopId: parseInt(workshopId),
+      },
+      select: {
+        userId: true,
+      },
+    });
 
-    const userPayments = validUserIds.map((userId) => ({
+    const alreadyRegisteredMap = alreadyRegistered.map((user) => user.userId);
+    const newIds = validUserIds.filter(
+      (id) => !alreadyRegisteredMap.includes(id)
+    );
+
+    console.log(newIds);
+    if (newIds.length === 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "All the users already registered for the workshop!",
+      });
+    }
+
+    const workshopPayment = await prisma.workshopPayment.create({
+      data: {
+        workshopId: parseInt(workshopId),
+        transactionId,
+        paymentMobile,
+        status: "PENDING",
+      },
+    });
+
+    const userPayments = newIds.map((userId) => ({
       userId,
       workshopPaymentId: workshopPayment.id,
     }));
@@ -429,7 +449,7 @@ export const bulkWorkshopPayment = async (req, res) => {
       skipDuplicates: true,
     });
 
-    const workshopRegistrations = validUserIds.map((userId) => ({
+    const workshopRegistrations = newIds.map((userId) => ({
       userId,
       workshopId: parseInt(workshopId),
     }));
@@ -443,7 +463,7 @@ export const bulkWorkshopPayment = async (req, res) => {
       fs.readFileSync(path.join("workshops.json"), "utf-8")
     );
 
-    for (const userId of validUserIds) {
+    for (const userId of newIds) {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const subject = "Reach'25 Workshop Registration Successful";
       const text = `Thank you for registering for ${
@@ -457,7 +477,10 @@ export const bulkWorkshopPayment = async (req, res) => {
       message:
         "Bulk payment recorded and users registered for the workshop successfully",
       payment: workshopPayment,
-      data: { ids: validUserIds },
+      data: {
+        newRegistrations: newIds,
+        alreadyRegistered: alreadyRegisteredMap,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -550,14 +573,12 @@ export const getUserWorkshops = async (req, res) => {
 
     console.log("All Merged Payments (Before Deduplication):", allPayments);
 
-    // Remove duplicate payments based on payment ID (keeping only unique ones)
     const uniquePayments = Array.from(
       new Map(allPayments.map((payment) => [payment.id, payment])).values()
     );
 
     console.log("Unique Payments (After Deduplication):", uniquePayments);
 
-    // Map payments by workshopId for easy lookup
     const paymentsByWorkshop = {};
     uniquePayments.forEach((payment) => {
       if (!paymentsByWorkshop[payment.workshopId]) {
@@ -573,32 +594,54 @@ export const getUserWorkshops = async (req, res) => {
       let bestPayment = null;
       for (const payment of payments) {
         if (payment.status === "SUCCESS") {
-          return payment; 
+          return payment;
         } else if (
           payment.status === "PENDING" &&
           (bestPayment?.status === "FAILURE" || !bestPayment)
         ) {
-          bestPayment = payment; 
+          bestPayment = payment;
         } else if (!bestPayment) {
-          bestPayment = payment; 
+          bestPayment = payment;
         }
       }
       return bestPayment;
     };
 
+    const bestPaymentsByWorkshop = {};
+    allPayments.forEach((payment) => {
+      const workshopId = payment.workshopId;
+      if (!bestPaymentsByWorkshop[workshopId]) {
+        bestPaymentsByWorkshop[workshopId] = payment;
+      } else {
+        bestPaymentsByWorkshop[workshopId] = getBestPayment([
+          bestPaymentsByWorkshop[workshopId],
+          payment,
+        ]);
+      }
+    });
+
+    console.log("Best pay for each workshop:", bestPaymentsByWorkshop);
+
+    const uniqueWorkshopsMap = new Map();
+    workshops.forEach((workshop) => {
+      uniqueWorkshopsMap.set(workshop.workshopId, workshop);
+    });
+
+    // Convert Map back to an array
+    const uniqueWorkshops = Array.from(uniqueWorkshopsMap.values());
+
     //  Combine workshops with payment status
-    const workshopsWithPayments = workshops.map((workshop) => {
-      const payments = paymentsByWorkshop[workshop.workshopId] || [];
-      const bestPayment = getBestPayment(payments); 
+    const workshopsWithPayments = uniqueWorkshops.map((workshop) => {
+      const bestPayment = bestPaymentsByWorkshop[workshop.workshopId] || null;
 
       return {
         ...workshop,
-        paymentStatus: bestPayment ? bestPayment.status : "No Payment", 
-        paymentDetails: bestPayment || {}, 
+        paymentStatus: bestPayment ? bestPayment.status : "No Payment",
+        paymentDetails: bestPayment || {},
       };
     });
 
-    console.log("Workshops with Payment Status:", workshopsWithPayments);
+    console.log("Final :", workshopsWithPayments);
 
     res.status(200).json({ workshops: workshopsWithPayments });
   } catch (error) {
