@@ -423,10 +423,10 @@ export const bulkWorkshopPayment = async (req, res) => {
     );
 
     console.log(newIds);
-    if (newIds.length === 0) {
+    if (newIds.length != 5) {
       return res.status(400).json({
         status: "error",
-        message: "All the users already registered for the workshop!",
+        message: "Some or all the user-Ids provided have already registered for the workshop!",
       });
     }
 
