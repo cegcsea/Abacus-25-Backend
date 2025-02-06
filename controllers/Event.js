@@ -426,7 +426,8 @@ export const bulkWorkshopPayment = async (req, res) => {
     if (newIds.length != 5) {
       return res.status(400).json({
         status: "error",
-        message: "Some or all the user-Ids provided have already registered for the workshop!",
+        message:
+          "Some or all the user-Ids provided have already registered for the workshop!",
       });
     }
 
@@ -492,6 +493,7 @@ export const bulkWorkshopPayment = async (req, res) => {
 };
 
 export const getWorkshops = async (req, res) => {
+  console.log("called");
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -510,12 +512,14 @@ export const getWorkshops = async (req, res) => {
     const workshopsData = JSON.parse(
       fs.readFileSync("workshops.json", "utf-8")
     );
+    console.log(workshopsData);
     const workshops = user.workshops.map((workshop) => {
       return {
         workshopId: workshop.workshopId,
         workshopName: workshopsData[workshop.workshopId.toString()],
       };
     });
+    console.log(workshops);
     return res.status(200).json({
       status: "success",
       message: "Workshop fetched successfully",
