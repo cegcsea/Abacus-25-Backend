@@ -111,6 +111,7 @@ export const Login = async (req, res) => {
         workshopPayments: true,
         workshops: true,
         events: true,
+        WorkshopPaymentUser: true,
       },
     });
     if (!user) {
@@ -362,6 +363,7 @@ export const profile = async (req, res) => {
         college: true,
         hostCollege: true,
         workshopPayments: true,
+        WorkshopPaymentUser: true,
         workshops: true,
         events: true,
       },
@@ -485,7 +487,7 @@ export const getRegistrationLink = async (req, res) => {
     res.status(200).json({
       status: "OK",
       message: "Registration link sent successfully!",
-      data: { link,secretKey },
+      data: { link, secretKey },
     });
   } catch (error) {
     console.log("direct");

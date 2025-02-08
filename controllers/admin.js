@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import sendEmail from "../utils/sendEmail.js"; // Make sure to add the `.js` extension
 import dotenv from "dotenv";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -361,11 +361,76 @@ export const workshopRegistrationList = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
+        // workshops: true,
       },
     });
+    const users = await prisma.user.findMany({
+      where: {
+        workshopPayments: {
+          some: {
+            workshopId: req.body.workshopId,
+          },
+        },
+      },
+      select: {
+        abacusId: true,
+        name: true,
+        email: true,
+        college: true,
+        mobile: true,
+        dept: true,
+        year: true,
+        workshopPayments: {
+          select: {
+            workshopId: true,
+            paymentMobile: true,
+            screenshot: true,
+            transactionId: true,
+            status: true,
+            admin: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          where: {
+            workshopId: req.body.workshopId,
+          },
+        },
+      },
+    });
+    const workshopsData = JSON.parse(
+      fs.readFileSync("workshops.json", "utf-8")
+    );
+    const paymentList = users.flatMap((user) => {
+      return user.workshopPayments.map((workshops) => {
+        return {
+          abacusId: user.abacusId,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          college: user.college,
+          dept:user.dept,
+          year:user.year,
+          workshopId: workshops.workshopId,
+          workshopName: workshopsData[workshops.workshopId.toString()],
+          transactionId: workshops.transactionId,
+          paymentMobile: workshops.paymentMobile,
+          screenshot: workshops.screenshot,
+          admin: workshops.admin?.name,
+          status: workshops.status,
+        };
+      });
+    });
+    // paymentList.map((user)=>{
+    //   console.log(user.workshopPayments);
+    // })
+    console.log(registrationList,paymentList)
+    const final = [...registrationList, ...paymentList];
+    //console.log(final);
     res.status(200).json({
       message: "Workshop Registration List fetched successfully",
-      data: registrationList,
+      data: final,
     });
   } catch (error) {
     res.status(500).json({ message: error.message, error });
@@ -426,6 +491,7 @@ export const workshopPaymentList = async (req, res) => {
         };
       });
     });
+    console.log(paymentList);
     res.status(200).json({
       message: "Workshop Payment List fetched successfully",
       data: paymentList,
@@ -462,10 +528,10 @@ export const setQueryReplied = async (req, res) => {
       },
     });
     const query = await prisma.queries.findUnique({
-      where: { id: req.body.id }
+      where: { id: req.body.id },
     });
-    console.log('Query:', query);
-    
+    console.log("Query:", query);
+
     res.status(200).json({ message: "Updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message, error });
@@ -557,5 +623,37 @@ export const Register = async (req, res) => {
       status: "error",
       message: "Internal server error",
     });
+  }
+};
+
+
+export const eventRegistrationList = async (req, res) => {
+  try {
+    const registrationList = await prisma.user.findMany({
+      where: {
+        events: {
+          some: {
+            eventId: req.body.eventId,
+          },
+        },
+      },
+      select: {
+        abacusId: true,
+        name: true,
+        college: true,
+        email: true,
+        mobile: true,
+        dept: true,
+        year: true,
+        // workshops: true,
+      },
+    });
+    console.log(registrationList);
+    res.status(200).json({
+      message: "Workshop Registration List fetched successfully",
+      data: registrationList,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, error });
   }
 };

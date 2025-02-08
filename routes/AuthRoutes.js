@@ -35,6 +35,8 @@ import {
   getWorkshops,
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
+  bulkWorkshopPayment,
+  getUserWorkshops,
 } from "../controllers/Event.js";
 
 const router = express.Router();
@@ -79,7 +81,16 @@ router.post(
   upload.single("paymentScreenshot"),
   workshopPaymentScreenshot
 );
+router.post(
+  "/workshop/bulk-payment",
+  auth, 
+  upload.single("paymentScreenshot"),  // Make sure to handle file upload
+  bulkWorkshopPayment
+);
+
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
+router.get("/user-workshops", auth,getUserWorkshops);
+
 
 export default router;
