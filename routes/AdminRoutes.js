@@ -21,6 +21,7 @@ import {
   workshopPaymentFailure,
   workshopRegistrationList,
   workshopPaymentList,
+  eventRegistrationList,
   Register,
 } from "../controllers/admin.js";
 
@@ -54,6 +55,7 @@ router.post("/workshop-cash-payment", auth, workshopCashPayment);
 router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
 router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
 router.post("/workshop-registration-list", auth, workshopRegistrationList);
+router.post("/event-registration-list", auth, eventRegistrationList);
 router.post("/workshop-payment-list", auth, workshopPaymentList);
 
 router.post(
