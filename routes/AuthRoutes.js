@@ -84,7 +84,7 @@ router.post(
 router.post(
   "/workshop/bulk-payment",
   auth, 
-  upload.single("paymentScreenshot"),  // Make sure to handle file upload
+  upload.single("paymentScreenshot"), 
   bulkWorkshopPayment
 );
 
