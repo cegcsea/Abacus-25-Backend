@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
+const path = require("path");
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import sendEmail from "../utils/sendEmail.js"; // Make sure to add the `.js` extension
@@ -155,9 +156,10 @@ export const pendingWorkshopsPayments = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const pendingPayments = pendingUsers.flatMap((user) => {
       return user.WorkshopPayment.map((workshops) => {
         return {
@@ -234,10 +236,10 @@ export const workshopCashPayment = async (req, res) => {
         workshopId: req.body.workshopId,
       },
     });
-
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const subject = "Reach'24 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
@@ -283,10 +285,10 @@ export const workshopPaymentSuccess = async (req, res) => {
         workshopId: updateWorkshop.workshopId,
       },
     });
-
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const subject = "Reach'24 Workshop Payment done successfully";
     const text =
       "You have successfully registered for " +
@@ -320,10 +322,10 @@ export const workshopPaymentFailure = async (req, res) => {
         verifiedBy: req.id,
       },
     });
-
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const subject = "Reach'24 Workshop Payment failed";
     const text =
       "Your payment for " +
@@ -399,9 +401,10 @@ export const workshopRegistrationList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const paymentList = users.flatMap((user) => {
       return user.WorkshopPayment.map((workshops) => {
         return {
@@ -471,9 +474,10 @@ export const workshopPaymentList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
     const paymentList = users.flatMap((user) => {
       return user.WorkshopPayment.map((workshops) => {
         return {

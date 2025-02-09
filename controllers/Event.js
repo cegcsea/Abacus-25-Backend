@@ -1,9 +1,8 @@
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
-import path from "path";
 import sendEmail from "../utils/sendEmail.js";
-
+const path = require('path');
 const prisma = new PrismaClient();
 
 export const eventRegister = async (req, res) => {
@@ -64,8 +63,8 @@ export const getEvents = async (req, res) => {
       });
       return;
     }
-
-    const eventsData = JSON.parse(fs.readFileSync("events.json", "utf-8"));
+    const eventsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','events.json'), 'utf-8'))
+    // const eventsData = JSON.parse(fs.readFileSync("events.json", "utf-8"));
     const events = user.events.map((event) => ({
       eventId: event.eventId,
       eventName: eventsData[event.eventId.toString()],
@@ -339,10 +338,10 @@ export const workshopPaymentScreenshot = async (req, res) => {
       where: { id: parseInt(req.params.workshopPaymentId) },
     });
 
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
-
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync("workshops.json", "utf-8")
+    // );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
     const subject = "Reach'25 Workshop Registration Successful";
     const text = `Thank you for registering for ${
       workshopsData[workshopPayment.workshopId.toString()]
@@ -509,9 +508,10 @@ export const getWorkshops = async (req, res) => {
         message: "Invalid User",
       });
     }
-    const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+      // fs.readFileSync("workshops.json", "utf-8")
+    // );
     console.log(workshopsData);
     const workshops = user.workshops.map((workshop) => {
       return {
