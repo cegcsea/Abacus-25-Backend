@@ -147,6 +147,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
             name: true,
             email: true,
             mobile: true,
+            hostCollege: true
           }
         }
       },
@@ -209,6 +210,9 @@ export const workshopUnpaid = async (req, res) => {
 };
 export const workshopCashPayment = async (req, res) => {
   try {
+    const connectedUsers = req.body.users.map((user) => {
+      return { id: user }
+    })
     const workshopPaymentEntry = await prisma.workshopPayment.create({
       data: {
         workshopId: req.body.workshopId,
@@ -218,7 +222,7 @@ export const workshopCashPayment = async (req, res) => {
         verifiedBy: req.id,
         transactionId: "CASH - " + Date.now(),
         users: {
-          connect: req.body.userId
+          connect: connectedUsers
         }
       },
       include: {
@@ -237,10 +241,10 @@ export const workshopCashPayment = async (req, res) => {
       workshopsData[req.body.workshopId.toString()] +
       " workshop\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: req.body.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < workshopPaymentEntry.users.length; i++) {
+      const userEmail = workshopPaymentEntry.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res.status(200).json({
       message: "Cash Payment done successful and workshop registered",
@@ -261,6 +265,9 @@ export const workshopPaymentSuccess = async (req, res) => {
         status: "SUCCESS",
         verifiedBy: req.id,
       },
+      include: {
+        users: true
+      }
     });
     fs.unlink(
       path.join(__dirname, "../images/" + updateWorkshop.screenshot),
@@ -270,7 +277,7 @@ export const workshopPaymentSuccess = async (req, res) => {
         }
       }
     );
-    
+
     const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -281,10 +288,10 @@ export const workshopPaymentSuccess = async (req, res) => {
       workshopsData[updateWorkshop.workshopId.toString()] +
       " workshop\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: updateWorkshop.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < updateWorkshop.users.length; i++) {
+      const userEmail = updateWorkshop.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res
       .status(200)
@@ -307,6 +314,9 @@ export const workshopPaymentFailure = async (req, res) => {
         status: "FAILURE",
         verifiedBy: req.id,
       },
+      include: {
+        users: true
+      }
     });
     const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
@@ -318,10 +328,10 @@ export const workshopPaymentFailure = async (req, res) => {
       workshopsData[updateWorkshop.workshopId.toString()] +
       " workshop is failed.\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: updateWorkshop.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < updateWorkshop.users.length; i++) {
+      const userEmail = updateWorkshop.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res.status(200).json({ message: "Payment Failed" });
   } catch (error) {
@@ -406,7 +416,7 @@ export const workshopRegistrationList = async (req, res) => {
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          Admin: workshops.admin?.name,
+          Admin: workshops.Admin?.name,
           status: workshops.status,
         };
       });
@@ -476,7 +486,7 @@ export const workshopPaymentList = async (req, res) => {
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          Admin: workshops.admin?.name,
+          admin: workshops.Admin?.name,
           status: workshops.status,
         };
       });
