@@ -8,23 +8,23 @@ datasource db {
 }
 
 model User {
-  id                  Int                   @id @default(autoincrement())
-  email               String                @unique
-  abacusId            Int                   @unique @default(autoincrement()) @map("abacusid")
-  name                String
-  mobile              String
-  year                Int
-  dept                String
-  college             String
-  accomodation        Boolean?
-  password            String
-  hostCollege         String?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @default(now()) @updatedAt
-  events              Event[]
-  token               ForgotPasswordToken?
-  workshops           Workshop[]
-  WorkshopPayment     WorkshopPayment[]
+  id              Int                  @id @default(autoincrement())
+  email           String               @unique
+  abacusId        Int                  @unique @default(autoincrement()) @map("abacusid")
+  name            String
+  mobile          String
+  year            Int
+  dept            String
+  college         String
+  accomodation    Boolean?
+  password        String
+  hostCollege     String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @default(now()) @updatedAt
+  events          Event[]
+  token           ForgotPasswordToken?
+  workshops       Workshop[]
+  WorkshopPayment WorkshopPayment[]
 
   @@map("user")
 }
@@ -86,17 +86,17 @@ model Queries {
 }
 
 model WorkshopPayment {
-  id            Int                   @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   workshopId    Int
   paymentMobile String
-  transactionId String                @unique
-  screenshot    String?               @unique
+  transactionId String   @unique
+  screenshot    String?  @unique
   status        Status
   verifiedBy    Int?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
   users         User[]
-  Admin         Admin?                @relation(fields: [verifiedBy], references: [id])
+  Admin         Admin?   @relation(fields: [verifiedBy], references: [id])
 }
 
 enum Status {

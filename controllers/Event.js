@@ -278,7 +278,7 @@ export const workshopRegister = async (req, res) => {
 
 export const verifyWorkshopPaymentDetails = async (req, res) => {
   try {
-      req.body.users.splice(0, 0, req.id)
+      req.body.users.splice(0, 0, req.id);
       const user = await prisma.user.findMany({
           where: {
               id: {
@@ -288,44 +288,42 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
           include: {
               workshopPayments: true
           }
-      })
+      });
       if (!user) {
-          return response_409(res, "Invalid User");
+          return res.status(409).json({ message: "Invalid User" });
       }
-      connectedUsers = req.body.users.map((user) => {
-          return { id: user };
-      })
-      let alreadyPaid = false;
-      user.map((u) => {
-          u.workshopPayments.map(workshopPayment => {
-              if (workshopPayment.workshopId === req.body.workshopId && workshopPayment.status !== "FAILURE") {
-                  alreadyPaid = true;
+      
+      const connectedUsers = req.body.users.map((user) => ({ id: user }));
+      
+      let alreadyPaid = user.some((u) =>
+          u.workshopPayments.some(workshopPayment => 
+              workshopPayment.workshopId === req.body.workshopId && workshopPayment.status !== "FAILURE"
+          )
+      );
+      
+      if (alreadyPaid) {
+          return res.status(409).json({ message: "One of the users has already paid for the workshop" });
+      }
+      
+      let transactionId = [
+          ...await prisma.workshopPayment.findMany({
+              where: {
+                  transactionId: req.body.transactionId,
+                  status: { in: ["SUCCESS", "PENDING"] }
+              }
+          }),
+          ...await prisma.eventPayment.findMany({
+              where: {
+                  transactionId: req.body.transactionId,
+                  status: { in: ["SUCCESS", "PENDING"] }
               }
           })
-      })
-      if (alreadyPaid) {
-          return response_409(res, "One of the users has already paid for the workshop");
-      }
-      let transactionId = []
-      transactionId.push(...await prisma.workshopPayment.findMany({
-          where: {
-              transactionId: req.body.transactionId,
-              status: {
-                  in: ["SUCCESS", "PENDING"]
-              }
-          }
-      }))
-      transactionId.push(...await prisma.eventPayment.findMany({
-          where: {
-              transactionId: req.body.transactionId,
-              status: {
-                  in: ["SUCCESS", "PENDING"]
-              }
-          }
-      }))
+      ];
+      
       if (transactionId.length > 0) {
-          return response_409(res, "Invalid Transaction Id");
+          return res.status(409).json({ message: "Invalid Transaction Id" });
       }
+      
       const workshopPayment = await prisma.workshopPayment.create({
           data: {
               workshopId: parseInt(req.body.workshopId),
@@ -336,50 +334,45 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
                   connect: connectedUsers
               }
           }
-      })
-      return response_200(res, "Payment details verified", { id: workshopPayment.id })
+      });
+      
+      return res.status(200).json({ message: "Payment details verified", id: workshopPayment.id });
   } catch (error) {
-      return response_500(res, error.message, error)
+      return res.status(500).json({ message: error.message, error });
   }
-}
+};
+
 export const workshopPaymentScreenshot = async (req, res) => {
   try {
       const workshopPayment = await prisma.workshopPayment.findUnique({
-          where: {
-              id: parseInt(req.params.workshopPaymentId)
-          }
-      })
-      if (!workshopPayment || (workshopPayment.screenshot != null)) {
-          response_409(res, "Invalid Payment Id");
+          where: { id: parseInt(req.params.workshopPaymentId) }
+      });
+      
+      if (!workshopPayment || (workshopPayment.screenshot !== null)) {
           fs.unlink(path.join(__dirname, '../images/' + req.file.filename), (err) => {
-              if (err) {
-                  console.error('Error deleting file:', err);
-              }
-          })
-          return;
+              if (err) console.error('Error deleting file:', err);
+          });
+          return res.status(409).json({ message: "Invalid Payment Id" });
       }
+      
       await prisma.workshopPayment.update({
-          data: {
-              screenshot: req.file.filename
-          },
-          where: {
-              id: parseInt(req.params.workshopPaymentId)
-          }
-      })
-      const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
-      const subject = "Abacus'24 Workshop Registration Successfull"
-      const text = "Thank you for registering for the " + workshopsData[workshopPayment.workshopId.toString()] + " workshop. Your payment details will be verified by admin soon."
-      const user = await prisma.user.findUnique({
-          where: {
-              id: req.id
-          }
-      })
+          data: { screenshot: req.file.filename },
+          where: { id: parseInt(req.params.workshopPaymentId) }
+      });
+      
+      const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'));
+      const subject = "Abacus'24 Workshop Registration Successful";
+      const text = `Thank you for registering for the ${workshopsData[workshopPayment.workshopId.toString()]} workshop. Your payment details will be verified by admin soon.`;
+      
+      const user = await prisma.user.findUnique({ where: { id: req.id } });
       sendEmail(user.email, subject, text);
-      response_200(res, "Screenshot uploaded successfully", {})
+      
+      return res.status(200).json({ message: "Screenshot uploaded successfully" });
   } catch (error) {
-      response_500(res, error.message, error)
+      return res.status(500).json({ message: error.message, error });
   }
-}
+};
+
 
 
 export const bulkWorkshopPayment = async (req, res) => {
@@ -553,126 +546,6 @@ export const getWorkshops = async (req, res) => {
     });
   }
 };
-
-// This function links the user to the payment
-// export const getUserWorkshops = async (req, res) => {
-//   const userId = req.id; // Ensure 'req.id' is passed correctly from the authorization middleware
-//   console.log("Fetching workshops for user ID:", userId);
-
-//   try {
-//     // Fetch all workshops the user is registered for
-//     const workshops = await prisma.workshop.findMany({
-//       where: { userId: userId }, // Ensure the userId is passed properly
-//     });
-//     console.log("User's Workshops:", workshops);
-
-//     // Fetch individual payments for the user
-//     const individualPayments = await prisma.workshopPayment.findMany({
-//       where: { userId: userId },
-//     });
-//     console.log("Individual Payments:", individualPayments);
-
-//     //  Fetch bulk payments the user is part of
-//     const workshopPaymentUsers = await prisma.workshopPaymentUser.findMany({
-//       where: { userId: userId },
-//       include: { workshopPayment: true },
-//     });
-//     console.log(
-//       "Workshop Payment Users (Bulk Payments):",
-//       workshopPaymentUsers
-//     );
-
-//     //Merge both individual & bulk payments
-//     const allPayments = [
-//       ...individualPayments,
-//       ...workshopPaymentUsers.map((record) => ({
-//         id: record.workshopPaymentId,
-//         userId: record.userId,
-//         workshopId: record.workshopPayment.workshopId,
-//         status: record.workshopPayment.status,
-//       })),
-//     ];
-
-//     console.log("All Merged Payments (Before Deduplication):", allPayments);
-
-//     const uniquePayments = Array.from(
-//       new Map(allPayments.map((payment) => [payment.id, payment])).values()
-//     );
-
-//     console.log("Unique Payments (After Deduplication):", uniquePayments);
-
-//     const paymentsByWorkshop = {};
-//     uniquePayments.forEach((payment) => {
-//       if (!paymentsByWorkshop[payment.workshopId]) {
-//         paymentsByWorkshop[payment.workshopId] = [];
-//       }
-//       paymentsByWorkshop[payment.workshopId].push(payment);
-//     });
-
-//     console.log("Payments Grouped by Workshop ID:", paymentsByWorkshop);
-
-//     //Combine workshops with payment status
-//     const getBestPayment = (payments) => {
-//       let bestPayment = null;
-//       for (const payment of payments) {
-//         if (payment.status === "SUCCESS") {
-//           return payment;
-//         } else if (
-//           payment.status === "PENDING" &&
-//           (bestPayment?.status === "FAILURE" || !bestPayment)
-//         ) {
-//           bestPayment = payment;
-//         } else if (!bestPayment) {
-//           bestPayment = payment;
-//         }
-//       }
-//       return bestPayment;
-//     };
-
-//     const bestPaymentsByWorkshop = {};
-//     allPayments.forEach((payment) => {
-//       const workshopId = payment.workshopId;
-//       if (!bestPaymentsByWorkshop[workshopId]) {
-//         bestPaymentsByWorkshop[workshopId] = payment;
-//       } else {
-//         bestPaymentsByWorkshop[workshopId] = getBestPayment([
-//           bestPaymentsByWorkshop[workshopId],
-//           payment,
-//         ]);
-//       }
-//     });
-
-//     console.log("Best pay for each workshop:", bestPaymentsByWorkshop);
-
-//     const uniqueWorkshopsMap = new Map();
-//     workshops.forEach((workshop) => {
-//       uniqueWorkshopsMap.set(workshop.workshopId, workshop);
-//     });
-
-//     //Convert Map back to an array
-//     const uniqueWorkshops = Array.from(uniqueWorkshopsMap.values());
-
-//     //  Combine workshops with payment status
-//     // const workshopsWithPayments = uniqueWorkshops.map((workshop) => {
-//     //   const bestPayment = bestPaymentsByWorkshop[workshop.workshopId] || null;
-
-//     //   return {
-//     //     ...workshop,
-//     //     paymentStatus: bestPayment ? bestPayment.status : "No Payment",
-//     //     paymentDetails: bestPayment || {},
-//     //   };
-//     // });
-
-//     const finalWorkshops = [...uniqueWorkshops, ...Object.values(bestPaymentsByWorkshop)];
-
-//     console.log("Final :", finalWorkshops);
-
-//     res.status(200).json({ workshops: finalWorkshops });
-//   } catch (error) {
-//     console.error("❌ Error fetching workshops:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 
 export const getUserWorkshops = async (req, res) => {
   const userId = req.id; // User ID from authentication middleware
