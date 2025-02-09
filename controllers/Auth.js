@@ -111,7 +111,7 @@ export const Login = async (req, res) => {
         WorkshopPayment: true,
         workshops: true,
         events: true,
-        WorkshopPaymentUser: true,
+        //WorkshopPaymentUser: true,
       },
     });
     if (!user) {
@@ -363,7 +363,7 @@ export const profile = async (req, res) => {
         college: true,
         hostCollege: true,
         WorkshopPayment: true,
-        WorkshopPaymentUser: true,
+        //WorkshopPaymentUser: true,
         workshops: true,
         events: true,
       },

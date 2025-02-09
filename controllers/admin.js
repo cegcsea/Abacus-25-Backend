@@ -75,7 +75,7 @@ export const addAdmin = async (req, res) => {
 
     const subject = "Admin added successfully";
     const text =
-      "You have been granted administrative access to Reach'24\n\n Thank you\n\n";
+      "You have been granted administrative access to Reach'25\\n\n Thank you\n\n";
 
     await sendEmail(admin.email, subject, text);
 
@@ -129,51 +129,44 @@ export const changePassword = async (req, res) => {
 
 export const pendingWorkshopsPayments = async (req, res) => {
   try {
-    const pendingUsers = await prisma.user.findMany({
+    const payments = await prisma.workshopPayment.findMany({
       where: {
-        WorkshopPayment: {
-          some: {
-            status: "PENDING",
-          },
-        },
+        status: {
+          in: ["PENDING"]
+        }
       },
       select: {
-        abacusId: true,
-        name: true,
-        email: true,
-        mobile: true,
-        WorkshopPayment: {
+        id: true,
+        workshopId: true,
+        paymentMobile: true,
+        screenshot: true,
+        transactionId: true,
+        users: {
           select: {
-            workshopId: true,
-            paymentMobile: true,
-            screenshot: true,
-            transactionId: true,
-          },
-          where: {
-            status: "PENDING",
-          },
-        },
+            abacusId: true,
+            name: true,
+            email: true,
+            mobile: true,
+            hostCollege: true
+          }
+        }
       },
-    });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    })
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const pendingPayments = pendingUsers.flatMap((user) => {
-      return user.WorkshopPayment.map((workshops) => {
-        return {
-          abacusId: user.abacusId,
-          name: user.name,
-          email: user.email,
-          mobile: user.mobile,
-          workshopId: workshops.workshopId,
-          workshopName: workshopsData[workshops.workshopId.toString()],
-          transactionId: workshops.transactionId,
-          paymentMobile: workshops.paymentMobile,
-          screenshot: workshops.screenshot,
-        };
-      });
-    });
+    const pendingPayments = payments.map((payment) => {
+      return {
+        id: payment.id,
+        users: payment.users,
+        workshopId: payment.workshopId,
+        workshopName: workshopsData[payment.workshopId.toString()],
+        transactionId: payment.transactionId,
+        paymentMobile: payment.paymentMobile,
+        screenshot: payment.screenshot
+      }
+    })
 
     return res.status(200).json({
       message: "Pending Payment List fetched successfully",
@@ -217,38 +210,41 @@ export const workshopUnpaid = async (req, res) => {
 };
 export const workshopCashPayment = async (req, res) => {
   try {
+    const connectedUsers = req.body.users.map((user) => {
+      return { id: user }
+    })
     const workshopPaymentEntry = await prisma.workshopPayment.create({
       data: {
-        userId: req.body.userId,
         workshopId: req.body.workshopId,
         paymentMobile: "CASH",
         screenshot: "CASH - " + Date.now(),
-        status: "SUCCESS",
+        status: 'SUCCESS',
         verifiedBy: req.id,
         transactionId: "CASH - " + Date.now(),
+        users: {
+          connect: connectedUsers
+        }
       },
-    });
+      include: {
+        users: true
+      }
+    })
 
-    const workshopEntry = await prisma.workshop.create({
-      data: {
-        userId: req.body.userId,
-        workshopId: req.body.workshopId,
-      },
-    });
-const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'24 Workshop Cash Payment done successfully";
+    const subject = "Reach'25 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[req.body.workshopId.toString()] +
       " workshop\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: req.body.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < workshopPaymentEntry.users.length; i++) {
+      const userEmail = workshopPaymentEntry.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res.status(200).json({
       message: "Cash Payment done successful and workshop registered",
@@ -269,6 +265,9 @@ export const workshopPaymentSuccess = async (req, res) => {
         status: "SUCCESS",
         verifiedBy: req.id,
       },
+      include: {
+        users: true
+      }
     });
     fs.unlink(
       path.join(__dirname, "../images/" + updateWorkshop.screenshot),
@@ -278,26 +277,21 @@ export const workshopPaymentSuccess = async (req, res) => {
         }
       }
     );
-    const workshopEntry = await prisma.workshop.create({
-      data: {
-        userId: updateWorkshop.userId,
-        workshopId: updateWorkshop.workshopId,
-      },
-    });
-const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'24 Workshop Payment done successfully";
+    const subject = "Reach'25 Workshop Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
       " workshop\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: updateWorkshop.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < updateWorkshop.users.length; i++) {
+      const userEmail = updateWorkshop.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res
       .status(200)
@@ -320,21 +314,24 @@ export const workshopPaymentFailure = async (req, res) => {
         status: "FAILURE",
         verifiedBy: req.id,
       },
+      include: {
+        users: true
+      }
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'24 Workshop Payment failed";
+    const subject = "Reach'25 Workshop Payment failed";
     const text =
       "Your payment for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
       " workshop is failed.\n\n Thank you\n\n";
 
-    const userEmail = (
-      await prisma.user.findUnique({ where: { id: updateWorkshop.userId } })
-    ).email;
-    await sendEmail(userEmail, subject, text);
+    for (let i = 0; i < updateWorkshop.users.length; i++) {
+      const userEmail = updateWorkshop.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
 
     res.status(200).json({ message: "Payment Failed" });
   } catch (error) {
@@ -400,7 +397,7 @@ export const workshopRegistrationList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
@@ -412,14 +409,14 @@ export const workshopRegistrationList = async (req, res) => {
           email: user.email,
           mobile: user.mobile,
           college: user.college,
-          dept:user.dept,
-          year:user.year,
+          dept: user.dept,
+          year: user.year,
           workshopId: workshops.workshopId,
           workshopName: workshopsData[workshops.workshopId.toString()],
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          Admin: workshops.admin?.name,
+          Admin: workshops.Admin?.name,
           status: workshops.status,
         };
       });
@@ -427,7 +424,7 @@ export const workshopRegistrationList = async (req, res) => {
     // paymentList.map((user)=>{
     //   console.log(user.workshopPayments);
     // })
-    console.log(registrationList,paymentList)
+    console.log(registrationList, paymentList)
     const final = [...registrationList, ...paymentList];
     //console.log(final);
     res.status(200).json({
@@ -473,7 +470,7 @@ export const workshopPaymentList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
@@ -489,7 +486,7 @@ export const workshopPaymentList = async (req, res) => {
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          Admin: workshops.admin?.name,
+          admin: workshops.Admin?.name,
           status: workshops.status,
         };
       });

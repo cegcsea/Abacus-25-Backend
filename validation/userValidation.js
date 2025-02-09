@@ -212,6 +212,11 @@ const workshopPaymentSchema = joi.object({
     "string.base": "Transaction ID must be a string",
     "any.required": "Transaction ID is required",
   }),
+  users: joi.array().items(joi.number().integer()).required().messages({
+    'array.base': 'Input must be an array',
+    'number.base': 'Each id in the array must be a number',
+    'number.integer': 'Each id in the array must be an integer',
+})
 });
 const updateProfileSchema = joi.object({
   name: joi.string().required().messages({
