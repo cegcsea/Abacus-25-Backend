@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@prisma/client": "^6.2.1",
+    "@prisma/client": "^6.3.1",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -15,7 +15,6 @@
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.9",
     "path": "^0.12.7",
-    "prisma": "^6.2.1",
     "psql": "^0.0.1"
   },
   "name": "abacus2025-backend",
@@ -30,5 +29,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "prisma": "^6.3.1"
+  }
 }
