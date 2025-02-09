@@ -146,7 +146,7 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
     console.log(req.body);
     const user = await prisma.user.findUnique({
       where: { id: req.id },
-      include: { workshopPayments: true },
+      include: { WorkshopPayment: true },
     });
 
     if (!user) {
@@ -160,7 +160,7 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
     let alreadyPaid = false;
     let pendingPaymentId = null;
 
-    user.workshopPayments.forEach((payment) => {
+    user.WorkshopPayment.forEach((payment) => {
       if (
         payment.workshopId === req.body.workshopId &&
         payment.transactionId === req.body.transactionId &&

@@ -131,7 +131,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
   try {
     const pendingUsers = await prisma.user.findMany({
       where: {
-        workshopPayments: {
+        WorkshopPayment: {
           some: {
             status: "PENDING",
           },
@@ -142,7 +142,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
         name: true,
         email: true,
         mobile: true,
-        workshopPayments: {
+        WorkshopPayment: {
           select: {
             workshopId: true,
             paymentMobile: true,
@@ -159,7 +159,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
       fs.readFileSync("workshops.json", "utf-8")
     );
     const pendingPayments = pendingUsers.flatMap((user) => {
-      return user.workshopPayments.map((workshops) => {
+      return user.WorkshopPayment.map((workshops) => {
         return {
           abacusId: user.abacusId,
           name: user.name,
@@ -188,7 +188,7 @@ export const workshopUnpaid = async (req, res) => {
     const usersWithoutPayments = await prisma.user.findMany({
       where: {
         NOT: {
-          workshopPayments: {
+          WorkshopPayment: {
             some: {
               workshopId: req.body.workshopId,
               status: {
@@ -366,7 +366,7 @@ export const workshopRegistrationList = async (req, res) => {
     });
     const users = await prisma.user.findMany({
       where: {
-        workshopPayments: {
+        WorkshopPayment: {
           some: {
             workshopId: req.body.workshopId,
           },
@@ -380,14 +380,14 @@ export const workshopRegistrationList = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
-        workshopPayments: {
+        WorkshopPayment: {
           select: {
             workshopId: true,
             paymentMobile: true,
             screenshot: true,
             transactionId: true,
             status: true,
-            admin: {
+            Admin: {
               select: {
                 name: true,
               },
@@ -403,7 +403,7 @@ export const workshopRegistrationList = async (req, res) => {
       fs.readFileSync("workshops.json", "utf-8")
     );
     const paymentList = users.flatMap((user) => {
-      return user.workshopPayments.map((workshops) => {
+      return user.WorkshopPayment.map((workshops) => {
         return {
           abacusId: user.abacusId,
           name: user.name,
@@ -417,7 +417,7 @@ export const workshopRegistrationList = async (req, res) => {
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          admin: workshops.admin?.name,
+          Admin: workshops.admin?.name,
           status: workshops.status,
         };
       });
