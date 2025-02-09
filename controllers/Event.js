@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import sendEmail from "../utils/sendEmail.js";
-const path = require('path');
+import path from "path";
 const prisma = new PrismaClient();
 
 export const eventRegister = async (req, res) => {

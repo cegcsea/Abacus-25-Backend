@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
-const path = require("path");
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import sendEmail from "../utils/sendEmail.js"; // Make sure to add the `.js` extension
