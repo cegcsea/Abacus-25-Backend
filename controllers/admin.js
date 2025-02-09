@@ -441,7 +441,7 @@ export const workshopPaymentList = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       where: {
-        workshopPayments: {
+        WorkshopPayment: {
           some: {
             workshopId: req.body.workshopId,
           },
@@ -452,7 +452,7 @@ export const workshopPaymentList = async (req, res) => {
         name: true,
         email: true,
         mobile: true,
-        workshopPayments: {
+        WorkshopPayment: {
           select: {
             workshopId: true,
             paymentMobile: true,
@@ -475,7 +475,7 @@ export const workshopPaymentList = async (req, res) => {
       fs.readFileSync("workshops.json", "utf-8")
     );
     const paymentList = users.flatMap((user) => {
-      return user.workshopPayments.map((workshops) => {
+      return user.WorkshopPayment.map((workshops) => {
         return {
           abacusId: user.abacusId,
           name: user.name,
