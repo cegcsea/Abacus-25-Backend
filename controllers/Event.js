@@ -4,7 +4,9 @@ import fs from "fs";
 import sendEmail from "../utils/sendEmail.js";
 import path from "path";
 const prisma = new PrismaClient();
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const eventRegister = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -63,7 +65,7 @@ export const getEvents = async (req, res) => {
       });
       return;
     }
-    const eventsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','events.json'), 'utf-8'))
+    const eventsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'events.json'), 'utf-8'))
     // const eventsData = JSON.parse(fs.readFileSync("events.json", "utf-8"));
     const events = user.events.map((event) => ({
       eventId: event.eventId,
@@ -117,14 +119,14 @@ export const workshopRegister = async (req, res) => {
       data: { userId: req.id, workshopId: req.body.workshopId },
     });
 
-    const workshopsData = JSON.parse(
-      fs.readFileSync(path.join("workshops.json"), "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync(path.join("workshops.json"), "utf-8")
+    // );
 
     const subject = "Reach'25 Workshop Registration Successful";
-    const text = `Thank you for registering for ${
-      workshopsData[req.body.workshopId.toString()]
-    } workshop.`;
+    const text = `Thank you for registering for ${workshopsData[req.body.workshopId.toString()]
+      } workshop.`;
     sendEmail(user.email, subject, text);
 
     res.status(200).json({
@@ -341,11 +343,10 @@ export const workshopPaymentScreenshot = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     const subject = "Reach'25 Workshop Registration Successful";
-    const text = `Thank you for registering for ${
-      workshopsData[workshopPayment.workshopId.toString()]
-    } workshop.`;
+    const text = `Thank you for registering for ${workshopsData[workshopPayment.workshopId.toString()]
+      } workshop.`;
 
     const user = await prisma.user.findUnique({ where: { id: req.id } });
 
@@ -381,7 +382,7 @@ export const bulkWorkshopPayment = async (req, res) => {
         message: "Missing required fields or empty userIds array",
       });
     }
-    
+
     // console.log( userIds.split(","));
     // if (userIds.length !== 5) {
     //   return res.status(400).json({
@@ -460,16 +461,16 @@ export const bulkWorkshopPayment = async (req, res) => {
       skipDuplicates: true,
     });
 
-    const workshopsData = JSON.parse(
-      fs.readFileSync(path.join("workshops.json"), "utf-8")
-    );
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    // const workshopsData = JSON.parse(
+    //   fs.readFileSync(path.join("workshops.json"), "utf-8")
+    // );
 
     for (const userId of validUserIds) {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const subject = "Reach'25 Workshop Registration Successful";
-      const text = `Thank you for registering for ${
-        workshopsData[workshopId.toString()]
-      } workshop.`;
+      const text = `Thank you for registering for ${workshopsData[workshopId.toString()]
+        } workshop.`;
       sendEmail(user.email, subject, text);
     }
 
@@ -508,9 +509,9 @@ export const getWorkshops = async (req, res) => {
         message: "Invalid User",
       });
     }
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
     // const workshopsData = JSON.parse(
-      // fs.readFileSync("workshops.json", "utf-8")
+    // fs.readFileSync("workshops.json", "utf-8")
     // );
     console.log(workshopsData);
     const workshops = user.workshops.map((workshop) => {
