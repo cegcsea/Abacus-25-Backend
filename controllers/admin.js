@@ -472,7 +472,7 @@ export const workshopPaymentList = async (req, res) => {
       },
     });
     const workshopsData = JSON.parse(
-      fs.readFileSync("workshops.json", "utf-8")
+      fs.readFileSync("./workshops.json", "utf-8")
     );
     const paymentList = users.flatMap((user) => {
       return user.WorkshopPayment.map((workshops) => {
