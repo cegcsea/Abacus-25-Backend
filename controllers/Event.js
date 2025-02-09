@@ -207,7 +207,7 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
         transactionId: req.body.transactionId,
         paymentMobile: req.body.paymentMobile,
         status: "PENDING",
-        User: { connect: { id: req.id } },
+        user: { connect: { id: req.id } },
       },
     });
     console.log(req.body);
