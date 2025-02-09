@@ -459,7 +459,7 @@ export const workshopPaymentList = async (req, res) => {
             screenshot: true,
             transactionId: true,
             status: true,
-            admin: {
+            Admin: {
               select: {
                 name: true,
               },
