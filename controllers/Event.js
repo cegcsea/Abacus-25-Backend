@@ -142,97 +142,12 @@ export const workshopRegister = async (req, res) => {
     });
   }
 };
-export const verifyWorkshopPaymentDetails = async (req, res) => {
-  try {
-    console.log(req.body);
-    const user = await prisma.user.findUnique({
-      where: { id: req.id },
-      include: { WorkshopPayment: true },
-    });
-
-    if (!user) {
-      return res.status(409).json({
-        status: "error",
-        error: "Conflict",
-        message: "Invalid User",
-      });
-    }
-    console.log(req.body);
-    let alreadyPaid = false;
-    let pendingPaymentId = null;
-
-    user.WorkshopPayment.forEach((payment) => {
-      if (
-        payment.workshopId === req.body.workshopId &&
-        payment.transactionId === req.body.transactionId &&
-        payment.paymentMobile === req.body.paymentMobile &&
-        payment.status === "PENDING" &&
-        !payment.screenshot
-      ) {
-        alreadyPaid = true;
-        pendingPaymentId = payment.id;
-      } else if (
-        payment.workshopId === req.body.workshopId &&
-        payment.status === "SUCCESS"
-      ) {
-        alreadyPaid = true;
-      }
-    });
-
-    // If user has a successful payment, reject request
-    if (alreadyPaid && !pendingPaymentId) {
-      return res.status(409).json({
-        status: "error",
-        error: "Conflict",
-        message: "User has already paid for the workshop",
-      });
-    }
-
-    console.log(req.body);
-
-    const transactionId = await prisma.workshopPayment.findUnique({
-      where: { transactionId: req.body.transactionId },
-    });
-
-    if (transactionId) {
-      return res.status(409).json({
-        status: "error",
-        error: "Conflict",
-        message: "Invalid Transaction Id",
-      });
-    }
-    console.log(req.body);
-    const workshopPayment = await prisma.workshopPayment.create({
-      data: {
-        workshopId: parseInt(req.body.workshopId),
-        transactionId: req.body.transactionId,
-        paymentMobile: req.body.paymentMobile,
-        status: "PENDING",
-        user: { connect: { id: req.id } },
-      },
-    });
-    console.log(req.body);
-    return res.status(200).json({
-      status: "OK",
-      message: "Payment details verified",
-      data: { id: workshopPayment.id },
-    });
-  } catch (error) {
-    console.error("❌ Error during workshop payment creation:", error);
-
-    return res.status(500).json({
-      status: "error",
-      error: `Something went wrong.\n${error.message}`,
-      message: "Internal server error in payment",
-    });
-  }
-};
-
 // export const verifyWorkshopPaymentDetails = async (req, res) => {
 //   try {
+//     console.log(req.body);
 //     const user = await prisma.user.findUnique({
 //       where: { id: req.id },
-//       include: { workshopPayments: true },
+//       include: { WorkshopPayment: true },
 //     });
 
 //     if (!user) {
@@ -242,11 +157,11 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
 //         message: "Invalid User",
 //       });
 //     }
-
+//     console.log(req.body);
 //     let alreadyPaid = false;
 //     let pendingPaymentId = null;
 
-//     user.workshopPayments.forEach((payment) => {
+//     user.WorkshopPayment.forEach((payment) => {
 //       if (
 //         payment.workshopId === req.body.workshopId &&
 //         payment.transactionId === req.body.transactionId &&
@@ -273,6 +188,8 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
 //       });
 //     }
 
+//     console.log(req.body);
+
 //     const transactionId = await prisma.workshopPayment.findUnique({
 //       where: { transactionId: req.body.transactionId },
 //     });
@@ -284,86 +201,186 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
 //         message: "Invalid Transaction Id",
 //       });
 //     }
-
-//     // Create Workshop Payment
+//     console.log(req.body);
 //     const workshopPayment = await prisma.workshopPayment.create({
 //       data: {
 //         workshopId: parseInt(req.body.workshopId),
 //         transactionId: req.body.transactionId,
 //         paymentMobile: req.body.paymentMobile,
 //         status: "PENDING",
-//         user: { connect: { id: req.id } }, // This part remains the same
+//         user: { connect: { id: req.id } },
 //       },
 //     });
-
-//     // Link users with Workshop Payment using WorkshopPaymentUser
-//     const userPayments = req.body.userIds.map((userId) => ({
-//       userId: userId,
-//       workshopPaymentId: workshopPayment.id,
-//     }));
-//     await prisma.workshopPaymentUser.createMany({ data: userPayments });
-
+//     console.log(req.body);
 //     return res.status(200).json({
 //       status: "OK",
 //       message: "Payment details verified",
 //       data: { id: workshopPayment.id },
 //     });
 //   } catch (error) {
+//     console.error("❌ Error during workshop payment creation:", error);
+
 //     return res.status(500).json({
 //       status: "error",
 //       error: `Something went wrong.\n${error.message}`,
-//       message: "Internal server error",
+//       message: "Internal server error in payment",
 //     });
 //   }
 // };
 
+// export const workshopPaymentScreenshot = async (req, res) => {
+//   try {
+//     const workshopPayment = await prisma.workshopPayment.findUnique({
+//       where: { id: parseInt(req.params.workshopPaymentId) },
+//     });
+
+//     if (!workshopPayment || workshopPayment.screenshot != null) {
+//       fs.unlink(path.join("../images/" + req.file.filename), (err) => {
+//         if (err) console.error("Error deleting file:", err);
+//       });
+
+//       return res.status(409).json({
+//         status: "error",
+//         error: "Conflict",
+//         message: "Invalid Payment Id",
+//       });
+//     }
+
+//     await prisma.workshopPayment.update({
+//       data: { screenshot: req.file.filename },
+//       where: { id: parseInt(req.params.workshopPaymentId) },
+//     });
+
+//     // const workshopsData = JSON.parse(
+//     //   fs.readFileSync("workshops.json", "utf-8")
+//     // );
+//     const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+//     const subject = "Reach'25 Workshop Registration Successful";
+//     const text = `Thank you for registering for ${workshopsData[workshopPayment.workshopId.toString()]
+//       } workshop.`;
+
+//     const user = await prisma.user.findUnique({ where: { id: req.id } });
+
+//     sendEmail(user.email, subject, text);
+
+//     return res.status(200).json({
+//       status: "OK",
+//       message: "Screenshot uploaded successfully",
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       status: "error",
+//       error: `Something went wrong.\n${error.message}`,
+//       message: "Internal server error in screenshot",
+//     });
+//   }
+// };
+
+export const verifyWorkshopPaymentDetails = async (req, res) => {
+  try {
+      req.body.users.splice(0, 0, req.id)
+      const user = await prisma.user.findMany({
+          where: {
+              id: {
+                  in: req.body.users
+              }
+          },
+          include: {
+              workshopPayments: true
+          }
+      })
+      if (!user) {
+          return response_409(res, "Invalid User");
+      }
+      connectedUsers = req.body.users.map((user) => {
+          return { id: user };
+      })
+      let alreadyPaid = false;
+      user.map((u) => {
+          u.workshopPayments.map(workshopPayment => {
+              if (workshopPayment.workshopId === req.body.workshopId && workshopPayment.status !== "FAILURE") {
+                  alreadyPaid = true;
+              }
+          })
+      })
+      if (alreadyPaid) {
+          return response_409(res, "One of the users has already paid for the workshop");
+      }
+      let transactionId = []
+      transactionId.push(...await prisma.workshopPayment.findMany({
+          where: {
+              transactionId: req.body.transactionId,
+              status: {
+                  in: ["SUCCESS", "PENDING"]
+              }
+          }
+      }))
+      transactionId.push(...await prisma.eventPayment.findMany({
+          where: {
+              transactionId: req.body.transactionId,
+              status: {
+                  in: ["SUCCESS", "PENDING"]
+              }
+          }
+      }))
+      if (transactionId.length > 0) {
+          return response_409(res, "Invalid Transaction Id");
+      }
+      const workshopPayment = await prisma.workshopPayment.create({
+          data: {
+              workshopId: parseInt(req.body.workshopId),
+              transactionId: req.body.transactionId,
+              paymentMobile: req.body.paymentMobile,
+              status: "PENDING",
+              users: {
+                  connect: connectedUsers
+              }
+          }
+      })
+      return response_200(res, "Payment details verified", { id: workshopPayment.id })
+  } catch (error) {
+      return response_500(res, error.message, error)
+  }
+}
 export const workshopPaymentScreenshot = async (req, res) => {
   try {
-    const workshopPayment = await prisma.workshopPayment.findUnique({
-      where: { id: parseInt(req.params.workshopPaymentId) },
-    });
-
-    if (!workshopPayment || workshopPayment.screenshot != null) {
-      fs.unlink(path.join("../images/" + req.file.filename), (err) => {
-        if (err) console.error("Error deleting file:", err);
-      });
-
-      return res.status(409).json({
-        status: "error",
-        error: "Conflict",
-        message: "Invalid Payment Id",
-      });
-    }
-
-    await prisma.workshopPayment.update({
-      data: { screenshot: req.file.filename },
-      where: { id: parseInt(req.params.workshopPaymentId) },
-    });
-
-    // const workshopsData = JSON.parse(
-    //   fs.readFileSync("workshops.json", "utf-8")
-    // );
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
-    const subject = "Reach'25 Workshop Registration Successful";
-    const text = `Thank you for registering for ${workshopsData[workshopPayment.workshopId.toString()]
-      } workshop.`;
-
-    const user = await prisma.user.findUnique({ where: { id: req.id } });
-
-    sendEmail(user.email, subject, text);
-
-    return res.status(200).json({
-      status: "OK",
-      message: "Screenshot uploaded successfully",
-    });
+      const workshopPayment = await prisma.workshopPayment.findUnique({
+          where: {
+              id: parseInt(req.params.workshopPaymentId)
+          }
+      })
+      if (!workshopPayment || (workshopPayment.screenshot != null)) {
+          response_409(res, "Invalid Payment Id");
+          fs.unlink(path.join(__dirname, '../images/' + req.file.filename), (err) => {
+              if (err) {
+                  console.error('Error deleting file:', err);
+              }
+          })
+          return;
+      }
+      await prisma.workshopPayment.update({
+          data: {
+              screenshot: req.file.filename
+          },
+          where: {
+              id: parseInt(req.params.workshopPaymentId)
+          }
+      })
+      const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname,'..','workshops.json'), 'utf-8'))
+      const subject = "Abacus'24 Workshop Registration Successfull"
+      const text = "Thank you for registering for the " + workshopsData[workshopPayment.workshopId.toString()] + " workshop. Your payment details will be verified by admin soon."
+      const user = await prisma.user.findUnique({
+          where: {
+              id: req.id
+          }
+      })
+      sendEmail(user.email, subject, text);
+      response_200(res, "Screenshot uploaded successfully", {})
   } catch (error) {
-    return res.status(500).json({
-      status: "error",
-      error: `Something went wrong.\n${error.message}`,
-      message: "Internal server error in screenshot",
-    });
+      response_500(res, error.message, error)
   }
-};
+}
+
 
 export const bulkWorkshopPayment = async (req, res) => {
   try {

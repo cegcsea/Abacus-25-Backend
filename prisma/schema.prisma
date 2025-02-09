@@ -25,7 +25,6 @@ model User {
   token               ForgotPasswordToken?
   workshops           Workshop[]
   WorkshopPayment     WorkshopPayment[]
-  WorkshopPaymentUser WorkshopPaymentUser[]
 
   @@map("user")
 }
@@ -75,16 +74,6 @@ model Admin {
   WorkshopPayment WorkshopPayment[]
 }
 
-model WorkshopPaymentUser {
-  id                Int             @id @default(autoincrement())
-  workshopPaymentId Int
-  userId            Int
-  user              User            @relation(fields: [userId], references: [id])
-  workshopPayment   WorkshopPayment @relation(fields: [workshopPaymentId], references: [id])
-
-  @@unique([workshopPaymentId, userId])
-}
-
 model Queries {
   id        Int      @id @default(autoincrement())
   name      String
@@ -106,10 +95,8 @@ model WorkshopPayment {
   verifiedBy    Int?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @default(now())
-  userId        Int?
-  user          User?                 @relation(fields: [userId], references: [id])
+  users         User[]
   Admin         Admin?                @relation(fields: [verifiedBy], references: [id])
-  users         WorkshopPaymentUser[]
 }
 
 enum Status {
