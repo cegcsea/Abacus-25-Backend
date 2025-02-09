@@ -486,7 +486,7 @@ export const workshopPaymentList = async (req, res) => {
           transactionId: workshops.transactionId,
           paymentMobile: workshops.paymentMobile,
           screenshot: workshops.screenshot,
-          admin: workshops.admin?.name,
+          Admin: workshops.admin?.name,
           status: workshops.status,
         };
       });
