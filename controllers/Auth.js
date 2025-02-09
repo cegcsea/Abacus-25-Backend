@@ -108,7 +108,7 @@ export const Login = async (req, res) => {
         dept: true,
         college: true,
         hostCollege: true,
-        WorkshopPayment: true,
+        workshopPayments: true,
         workshops: true,
         events: true,
         WorkshopPaymentUser: true,
@@ -205,7 +205,7 @@ export const forgotPassword = async (req, res) => {
       req.body.email,
       "Reset Password Link",
       "Click the link below to reset password for your Reach'25 account\n" +
-        link
+      link
     );
     return res.status(200).json({
       status: "OK",
@@ -362,7 +362,7 @@ export const profile = async (req, res) => {
         dept: true,
         college: true,
         hostCollege: true,
-        WorkshopPayment: true,
+        workshopPayments: true,
         WorkshopPaymentUser: true,
         workshops: true,
         events: true,
