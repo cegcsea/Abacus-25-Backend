@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "../middlewares/userAuth.js";
 import upload from "../middlewares/upload.js";
+import upload2 from "../middlewares/upload2.js";
 import {
   getRegistrationLinkValidation,
   registerValidation,
@@ -27,6 +28,7 @@ import {
   eventRegisterValidation,
   workshopRegisterValidation,
   workshopPaymentValidation,
+  eventPaymentValidation,
 } from "../validation/userValidation.js";
 import {
   eventRegister,
@@ -35,7 +37,8 @@ import {
   getWorkshops,
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
-  
+  verifyEventPaymentDetails,
+  eventPaymentScreenshot
 } from "../controllers/Event.js";
 
 const router = express.Router();
@@ -74,13 +77,14 @@ router.post(
   workshopPaymentValidation,
   verifyWorkshopPaymentDetails
 );
+router.post('/verify-event-payment-details', auth, eventPaymentValidation, verifyEventPaymentDetails)
 router.post(
   "/workshop-payment-screenshot/:workshopPaymentId",
   auth,
   upload.single("paymentScreenshot"),
   workshopPaymentScreenshot
 );
-
+router.post('/event-payment-screenshot/:eventPaymentId', auth, upload2.single('paymentScreenshot'), eventPaymentScreenshot)
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
 

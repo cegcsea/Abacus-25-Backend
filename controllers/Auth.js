@@ -107,13 +107,17 @@ export const Login = async (req, res) => {
         year: true,
         dept: true,
         college: true,
+        accomodation: true,
         hostCollege: true,
+        //eventPayments: true,
         WorkshopPayment: true,
         workshops: true,
         events: true,
-        //WorkshopPaymentUser: true,
+        referralCode: true,
+        accDetails: true,
       },
     });
+    console.log(user)
     if (!user) {
       return res.status(404).json({
         status: "error",
@@ -205,7 +209,7 @@ export const forgotPassword = async (req, res) => {
       req.body.email,
       "Reset Password Link",
       "Click the link below to reset password for your Reach'25 account\n" +
-      link
+        link
     );
     return res.status(200).json({
       status: "OK",
@@ -363,9 +367,12 @@ export const profile = async (req, res) => {
         college: true,
         hostCollege: true,
         WorkshopPayment: true,
-        //WorkshopPaymentUser: true,
+        accomodation: true,
+        //eventPayments: true,
         workshops: true,
         events: true,
+        referralCode: true,
+        accDetails: true,
       },
     });
     return res.status(200).json({

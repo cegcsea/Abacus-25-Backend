@@ -150,7 +150,7 @@ export const workshopRegister = async (req, res) => {
 
 export const verifyWorkshopPaymentDetails = async (req, res) => {
   try {
-        const validUsers = await prisma.user.findMany({
+    const validUsers = await prisma.user.findMany({
       where: { id: { in: req.body.users } },
       select: { id: true },
     });
@@ -210,14 +210,16 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
         },
       }))
     );
-    // transactionId.push(...await prisma.eventPayment.findMany({
-    //     where: {
-    //         transactionId: req.body.transactionId,
-    //         status: {
-    //             in: ["SUCCESS", "PENDING"]
-    //         }
-    //     }
-    // }))
+    transactionId.push(
+      ...(await prisma.eventPayment.findMany({
+        where: {
+          transactionId: req.body.transactionId,
+          status: {
+            in: ["SUCCESS", "PENDING"],
+          },
+        },
+      }))
+    );
     if (transactionId.length > 0) {
       return res.status(409).json({ message: "Invalid Transaction Id" });
     }
@@ -282,7 +284,158 @@ export const workshopPaymentScreenshot = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+export const verifyEventPaymentDetails = async (req, res) => {
+  try {
+    // Validate all provided user IDs
+    const validUsers = await prisma.user.findMany({
+      where: { id: { in: req.body.users } },
+      select: { id: true },
+    });
 
+    const validUserIds = validUsers.map((user) => user.id);
+
+    if (validUserIds.length !== req.body.users.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "All provided user IDs must be valid!",
+      });
+    }
+
+    // Fetch users with their event payments
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          in: req.body.users,
+        },
+      },
+      include: {
+        eventPayments: true,
+      },
+    });
+
+    if (!users || users.length === 0) {
+      return res.status(409).json({ message: "Invalid User" });
+    }
+
+    const connectedUsers = req.body.users.map((user) => {
+      return { id: user };
+    });
+
+    let alreadyPaid = false;
+    users.forEach((u) => {
+      u.eventPayments.forEach((eventPayment) => {
+        if (
+          eventPayment.eventId === req.body.eventId &&
+          eventPayment.status !== "FAILURE"
+        ) {
+          alreadyPaid = true;
+        }
+      });
+    });
+    if (alreadyPaid) {
+      return res.status(409).json({
+        message: "One of the users has already paid for the event",
+      });
+    }
+
+    let transactionId = [];
+    transactionId.push(
+      ...(await prisma.eventPayment.findMany({
+        where: {
+          transactionId: req.body.transactionId,
+          status: {
+            in: ["SUCCESS", "PENDING"],
+          },
+        },
+      }))
+    );
+    transactionId.push(
+      ...(await prisma.workshopPayment.findMany({
+        where: {
+          transactionId: req.body.transactionId,
+          status: {
+            in: ["SUCCESS", "PENDING"],
+          },
+        },
+      }))
+    );
+    if (transactionId.length > 0) {
+      return res.status(409).json({ message: "Invalid Transaction Id" });
+    }
+
+    const eventPayment = await prisma.eventPayment.create({
+      data: {
+        eventId: parseInt(req.body.eventId),
+        transactionId: req.body.transactionId,
+        paymentMobile: req.body.paymentMobile,
+        status: "PENDING",
+        users: {
+          connect: connectedUsers,
+        },
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Payment details verified", id: eventPayment.id });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+
+export const eventPaymentScreenshot = async (req, res) => {
+  try {
+    const eventPayment = await prisma.eventPayment.findUnique({
+      where: {
+        id: parseInt(req.params.eventPaymentId),
+      },
+    });
+
+    if (!eventPayment || eventPayment.screenshot !== null) {
+      fs.unlink(
+        path.join(__dirname, "../images/" + req.file.filename),
+        (err) => {
+          if (err) console.error("Error deleting file:", err);
+        }
+      );
+      return res.status(409).json({ message: "Invalid Payment Id" });
+    }
+
+    await prisma.eventPayment.update({
+      data: {
+        screenshot: req.file.filename,
+      },
+      where: {
+        id: parseInt(req.params.eventPaymentId),
+      },
+    });
+
+    let subject, text;
+    if (eventPayment.eventId === 9000) {
+      subject = "Abacus'25 Accommodation Registration Successful";
+      text =
+        "Thank you for registering for accommodation during Abacus'25. Your payment details will be verified by admin soon.";
+    } else {
+      const eventsData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      );
+      subject = "Abacus'25 Event Registration Successful";
+      text =
+        "Thank you for registering for the " +
+        eventsData[eventPayment.eventId.toString()] +
+        " event. Your payment details will be verified by admin soon.";
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.id },
+    });
+    sendEmail(user.email, subject, text);
+
+    return res.status(200).json({ message: "Screenshot uploaded successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
 export const getWorkshops = async (req, res) => {
   console.log("called");
   try {
@@ -329,4 +482,32 @@ export const getWorkshops = async (req, res) => {
     });
   }
 };
-
+export const accomodationDetails = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.id,
+      },
+    });
+    if (!user) {
+      return res.status(409).json({ message: "Invalid User", data: {} });
+    }
+    const accomodationDetails = await prisma.accomodation.create({
+      data: {
+        userId: req.id,
+        day0: req.body.day0,
+        day1: req.body.day1,
+        day2: req.body.day2,
+        day3: req.body.day3,
+        food: req.body.food,
+        amount: req.body.amount,
+      },
+    });
+    return res.status(200).json({
+      message: "Accommodation details inserted successfully",
+      data: {},
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};

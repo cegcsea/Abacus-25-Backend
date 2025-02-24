@@ -8,27 +8,27 @@ datasource db {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  email              String               @unique
-  abacusId           Int                  @unique @default(autoincrement()) @map("abacusid")
-  name               String
-  mobile             String
-  year               Int
-  dept               String
-  college            String
-  accomodation       Boolean?
-  password           String
-  hostCollege        String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
-  events             Event[]
-  token              ForgotPasswordToken?
-  workshops          Workshop[]
-  WorkshopPayment    WorkshopPayment[]
-  CampusAmbassador   CampusAmbassador?    @relation(fields: [campusAmbassadorId], references: [id])
-  campusAmbassadorId Int?
-  EventPayment       EventPayment?        @relation(fields: [eventPaymentId], references: [id])
-  eventPaymentId     Int?
+  id               Int                  @id @default(autoincrement())
+  email            String               @unique
+  abacusId         Int                  @unique @default(autoincrement()) @map("abacusid")
+  name             String
+  mobile           String
+  year             Int
+  dept             String
+  college          String
+  accomodation     Boolean?
+  password         String
+  referralCode     String?
+  hostCollege      String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @default(now()) @updatedAt
+  events           Event[]
+  token            ForgotPasswordToken?
+  workshops        Workshop[]
+  WorkshopPayment  WorkshopPayment[]
+  CampusAmbassador CampusAmbassador?    @relation(fields: [referralCode], references: [referralCode])
+  eventPayments    EventPayment[]
+  accDetails       Accomodation?
 
   @@map("user")
 }
@@ -124,7 +124,7 @@ model WorkshopPayment {
   status        Status
   verifiedBy    Int?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
   users         User[]
   Admin         Admin?   @relation(fields: [verifiedBy], references: [id])
 }
@@ -133,4 +133,19 @@ enum Status {
   PENDING
   SUCCESS
   FAILURE
+}
+
+model Accomodation {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  day0      Boolean
+  day1      Boolean
+  day2      Boolean
+  day3      Boolean
+  food      Boolean
+  amount    Int
+  paid      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

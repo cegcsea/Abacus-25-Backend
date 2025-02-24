@@ -213,10 +213,44 @@ const workshopPaymentSchema = joi.object({
     "any.required": "Transaction ID is required",
   }),
   users: joi.array().items(joi.number().integer()).required().messages({
-    'array.base': 'Input must be an array',
-    'number.base': 'Each id in the array must be a number',
-    'number.integer': 'Each id in the array must be an integer',
-})
+    "array.base": "Input must be an array",
+    "number.base": "Each id in the array must be a number",
+    "number.integer": "Each id in the array must be an integer",
+  }),
+});
+const eventPaymentSchema = joi.object({
+  eventId: joi
+    .number()
+    .strict()
+    .precision(0)
+    .min(1)
+    .max(13)
+    .required()
+    .messages({
+      "any.required": "Event Id is required",
+      "number.base": "Event Id must be a number",
+      "number.precision": "Event Id must be a number",
+      "number.min": "Event Id should range between 1 and 13",
+      "number.max": "Event Id should range between 1 and 13",
+    }),
+  paymentMobile: joi
+    .string()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "string.base": "Payment Mobile must be a string",
+      "string.pattern.base": "Payment Mobile must be of 10 digits",
+      "any.required": "Payment Mobile is required",
+    }),
+  transactionId: joi.string().required().messages({
+    "string.base": "Transaction ID must be a string",
+    "any.required": "Transaction ID is required",
+  }),
+  users: joi.array().items(joi.number().integer()).required().messages({
+    "array.base": "Input must be an array",
+    "number.base": "Each id in the array must be a number",
+    "number.integer": "Each id in the array must be an integer",
+  }),
 });
 const updateProfileSchema = joi.object({
   name: joi.string().required().messages({
@@ -258,6 +292,28 @@ const querySchema = joi.object({
     "string.base": "Email must be a string.",
     "string.email":
       "Invalid email format. Please provide a valid email address.",
+  }),
+});
+
+const accomodationDetailsSchema = joi.object({
+  day0: joi.boolean().required().messages({
+    "boolean.empty": "Day 0 choice is required",
+  }),
+  day1: joi.boolean().required().messages({
+    "boolean.empty": "Day 1 choice is required",
+  }),
+  day2: joi.boolean().required().messages({
+    "boolean.empty": "Day 2 choice is required",
+  }),
+  day3: joi.boolean().required().messages({
+    "boolean.empty": "Day 3 choice is required",
+  }),
+  food: joi.boolean().required().messages({
+    "boolean.empty": "Food choice is required",
+  }),
+  amount: joi.number().required().messages({
+    "number.base": "Year must be a number",
+    "number.empty": "Year is required",
   }),
 });
 // Validation functions
@@ -392,6 +448,31 @@ export const queryValidation = (req, res, next) => {
       error: "Bad request",
       message: error.details[0].message,
     });
+  }
+  next();
+};
+export const eventPaymentValidation = (req, res, next) => {
+  const { error } = eventPaymentSchema.validate(req.body);
+  console.log(req.body);
+  if (error) {
+    res.status(400).json({
+      status: "error",
+      error: "Bad request",
+      message: error.details[0].message,
+    });
+    return;
+  }
+  next();
+};
+export const accomodationDetailsValidation = (req, res, next) => {
+  const { error } = accomodationDetailsSchema.validate(req.body);
+  if (error) {
+    res.status(400).json({
+      status: "error",
+      error: "Bad request",
+      message: error.details[0].message,
+    });
+    return;
   }
   next();
 };
