@@ -8,25 +8,40 @@ datasource db {
 }
 
 model User {
-  id              Int                  @id @default(autoincrement())
-  email           String               @unique
-  abacusId        Int                  @unique @default(autoincrement()) @map("abacusid")
-  name            String
-  mobile          String
-  year            Int
-  dept            String
-  college         String
-  accomodation    Boolean?
-  password        String
-  hostCollege     String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @default(now()) @updatedAt
-  events          Event[]
-  token           ForgotPasswordToken?
-  workshops       Workshop[]
-  WorkshopPayment WorkshopPayment[]
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique
+  abacusId           Int                  @unique @default(autoincrement()) @map("abacusid")
+  name               String
+  mobile             String
+  year               Int
+  dept               String
+  college            String
+  accomodation       Boolean?
+  password           String
+  hostCollege        String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  events             Event[]
+  token              ForgotPasswordToken?
+  workshops          Workshop[]
+  WorkshopPayment    WorkshopPayment[]
+  CampusAmbassador   CampusAmbassador?    @relation(fields: [campusAmbassadorId], references: [id])
+  campusAmbassadorId Int?
+  EventPayment       EventPayment?        @relation(fields: [eventPaymentId], references: [id])
+  eventPaymentId     Int?
 
   @@map("user")
+}
+
+model CampusAmbassador {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  college      String
+  referralCode String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  users        User[]
 }
 
 model RegistrationToken {
@@ -55,6 +70,20 @@ model Event {
   user      User     @relation(fields: [userId], references: [id])
 }
 
+model EventPayment {
+  id            Int      @id @default(autoincrement())
+  eventId       Int
+  paymentMobile String
+  transactionId String
+  screenshot    String?  @unique
+  status        Status
+  verifiedBy    Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  users         User[]
+  admin         Admin?   @relation(fields: [verifiedBy], references: [id])
+}
+
 model Workshop {
   id         Int      @id @default(autoincrement())
   userId     Int
@@ -72,6 +101,7 @@ model Admin {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
   WorkshopPayment WorkshopPayment[]
+  EventPayment    EventPayment[]
 }
 
 model Queries {
