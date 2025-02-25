@@ -65,6 +65,10 @@ const registerSchema = joi.object({
   accomodation: joi.boolean().required().messages({
     "boolean.empty": "Accomodation choice required",
   }),
+  
+    referralCode: joi.string().allow('').optional().messages({
+        'string.base': 'Referral Code must be a string'
+    })
 });
 const loginSchema = joi.object({
   email: joi.string().email().required().messages({

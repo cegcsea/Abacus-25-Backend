@@ -19,7 +19,21 @@ export const Register = async (req, res) => {
         error: "conflict",
         message: "User already registered",
       });
-    } else {
+    }
+   else if (req.body.referralCode !== '') {
+      const validReferralCode = await prisma.campusAmbassador.findUnique({
+          where: {
+              referralCode: req.body.referralCode
+          }
+      })
+      if (!validReferralCode) {
+        return res.status(409).json({
+          status: "error",
+          error: "conflict",
+          message: "Invalid referral code",
+        });
+      }
+  } else {
       const token = await prisma.registrationToken.findUnique({
         where: {
           email: req.body.email,
@@ -58,6 +72,7 @@ export const Register = async (req, res) => {
             dept: req.body.dept,
             college: req.body.college,
             password: password,
+            referralCode:req.body.referralCode,
             accomodation: req.body.accomodation,
           },
         });
@@ -323,6 +338,20 @@ export const postQuery = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
+    if (req.body.referralCode !== '') {
+      const validReferralCode = await prisma.campusAmbassador.findUnique({
+          where: {
+              referralCode: req.body.referralCode
+          }
+      })
+      if (!validReferralCode) {
+        return res.status(409).json({
+          status: "error",
+          error: "conflict",
+          message: "Invalid referral code",
+        });
+      }
+  }
     const updatedUser = await prisma.user.update({
       where: {
         id: req.id,
@@ -352,6 +381,7 @@ export const updateProfile = async (req, res) => {
 
 export const profile = async (req, res) => {
   try {
+
     const user = await prisma.user.findUnique({
       where: {
         id: req.id,
