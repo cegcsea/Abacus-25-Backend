@@ -23,12 +23,14 @@ import {
   profile,
   updateProfile,
   postQuery,
+  accomodationDetails
 } from "../controllers/Auth.js";
 import {
   eventRegisterValidation,
   workshopRegisterValidation,
   workshopPaymentValidation,
   eventPaymentValidation,
+  accomodationDetailsValidation
 } from "../validation/userValidation.js";
 import {
   eventRegister,
@@ -87,7 +89,12 @@ router.post(
 router.post('/event-payment-screenshot/:eventPaymentId', auth, upload2.single('paymentScreenshot'), eventPaymentScreenshot)
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
-
+router.post(
+  "/accomodation-details",
+  auth,
+  accomodationDetailsValidation,
+  accomodationDetails
+);
 
 
 export default router;

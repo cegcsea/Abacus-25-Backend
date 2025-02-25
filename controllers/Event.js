@@ -286,7 +286,6 @@ export const workshopPaymentScreenshot = async (req, res) => {
 };
 export const verifyEventPaymentDetails = async (req, res) => {
   try {
-    // Validate all provided user IDs
     const validUsers = await prisma.user.findMany({
       where: { id: { in: req.body.users } },
       select: { id: true },
@@ -301,7 +300,6 @@ export const verifyEventPaymentDetails = async (req, res) => {
       });
     }
 
-    // Fetch users with their event payments
     const users = await prisma.user.findMany({
       where: {
         id: {
@@ -411,7 +409,7 @@ export const eventPaymentScreenshot = async (req, res) => {
     });
 
     let subject, text;
-    if (eventPayment.eventId === 9000) {
+    if (eventPayment.eventId === 10) {
       subject = "Abacus'25 Accommodation Registration Successful";
       text =
         "Thank you for registering for accommodation during Abacus'25. Your payment details will be verified by admin soon.";
@@ -482,32 +480,4 @@ export const getWorkshops = async (req, res) => {
     });
   }
 };
-export const accomodationDetails = async (req, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: req.id,
-      },
-    });
-    if (!user) {
-      return res.status(409).json({ message: "Invalid User", data: {} });
-    }
-    const accomodationDetails = await prisma.accomodation.create({
-      data: {
-        userId: req.id,
-        day0: req.body.day0,
-        day1: req.body.day1,
-        day2: req.body.day2,
-        day3: req.body.day3,
-        food: req.body.food,
-        amount: req.body.amount,
-      },
-    });
-    return res.status(200).json({
-      message: "Accommodation details inserted successfully",
-      data: {},
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message, error });
-  }
-};
+

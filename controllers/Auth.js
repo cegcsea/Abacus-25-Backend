@@ -505,3 +505,32 @@ export const getRegistrationLink = async (req, res) => {
     });
   }
 };
+export const accomodationDetails = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.id,
+      },
+    });
+    if (!user) {
+      return res.status(409).json({ message: "Invalid User", data: {} });
+    }
+    const accomodationDetails = await prisma.accomodation.create({
+      data: {
+        userId: req.id,
+        day0: req.body.day0,
+        day1: req.body.day1,
+        day2: req.body.day2,
+        day3: req.body.day3,
+        food: req.body.food,
+        amount: req.body.amount,
+      },
+    });
+    return res.status(200).json({
+      message: "Accommodation details inserted successfully",
+      data: {},
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
