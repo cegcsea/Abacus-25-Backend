@@ -147,7 +147,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
             name: true,
             email: true,
             mobile: true,
-            hostCollege: true
+            //hostCollege: true
           }
         }
       },
@@ -553,7 +553,7 @@ export const Register = async (req, res) => {
       !year ||
       !dept ||
       !college ||
-      !hostCollege ||
+      //!hostCollege ||
       !password
     ) {
       return res.status(400).json({
@@ -596,7 +596,7 @@ export const Register = async (req, res) => {
         year: parseInt(year),
         dept,
         college,
-        hostCollege,
+        //hostCollege,
         password: hashedPassword,
       },
     });

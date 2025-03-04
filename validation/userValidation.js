@@ -45,9 +45,9 @@ const registerSchema = joi.object({
   college: joi.string().required().messages({
     "string.empty": "College is required",
   }),
-  hostCollege: joi.string().required().messages({
-    "string.empty": "College is required",
-  }),
+  // hostCollege: joi.string().required().messages({
+  //   "string.empty": "College is required",
+  // }),
   password: joi
     .string()
     .required()
