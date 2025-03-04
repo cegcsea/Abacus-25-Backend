@@ -75,7 +75,7 @@ export const addAdmin = async (req, res) => {
 
     const subject = "Admin added successfully";
     const text =
-      "You have been granted administrative access to Reach'25\\n\n Thank you\n\n";
+      "You have been granted administrative access to Abacus'25\\n\n Thank you\n\n";
 
     await sendEmail(admin.email, subject, text);
 
@@ -132,8 +132,8 @@ export const pendingWorkshopsPayments = async (req, res) => {
     const payments = await prisma.workshopPayment.findMany({
       where: {
         status: {
-          in: ["PENDING"]
-        }
+          in: ["PENDING"],
+        },
       },
       select: {
         id: true,
@@ -148,11 +148,13 @@ export const pendingWorkshopsPayments = async (req, res) => {
             email: true,
             mobile: true,
             //hostCollege: true
-          }
-        }
+          },
+        },
       },
-    })
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    });
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
@@ -164,9 +166,9 @@ export const pendingWorkshopsPayments = async (req, res) => {
         workshopName: workshopsData[payment.workshopId.toString()],
         transactionId: payment.transactionId,
         paymentMobile: payment.paymentMobile,
-        screenshot: payment.screenshot
-      }
-    })
+        screenshot: payment.screenshot,
+      };
+    });
 
     return res.status(200).json({
       message: "Pending Payment List fetched successfully",
@@ -211,31 +213,32 @@ export const workshopUnpaid = async (req, res) => {
 export const workshopCashPayment = async (req, res) => {
   try {
     const connectedUsers = req.body.users.map((user) => {
-      return { id: user }
-    })
+      return { id: user };
+    });
     const workshopPaymentEntry = await prisma.workshopPayment.create({
       data: {
         workshopId: req.body.workshopId,
         paymentMobile: "CASH",
         screenshot: "CASH - " + Date.now(),
-        status: 'SUCCESS',
+        status: "SUCCESS",
         verifiedBy: req.id,
         transactionId: "CASH - " + Date.now(),
         users: {
-          connect: connectedUsers
-        }
+          connect: connectedUsers,
+        },
       },
       include: {
-        users: true
-      }
-    })
+        users: true,
+      },
+    });
 
-
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Cash Payment done successfully";
+    const subject = "Abacus'25 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[req.body.workshopId.toString()] +
@@ -266,8 +269,8 @@ export const workshopPaymentSuccess = async (req, res) => {
         verifiedBy: req.id,
       },
       include: {
-        users: true
-      }
+        users: true,
+      },
     });
     fs.unlink(
       path.join(__dirname, "../images/" + updateWorkshop.screenshot),
@@ -278,11 +281,13 @@ export const workshopPaymentSuccess = async (req, res) => {
       }
     );
 
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Payment done successfully";
+    const subject = "Abacus'25 Workshop Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
@@ -315,14 +320,16 @@ export const workshopPaymentFailure = async (req, res) => {
         verifiedBy: req.id,
       },
       include: {
-        users: true
-      }
+        users: true,
+      },
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Payment failed";
+    const subject = "Abacus'25 Workshop Payment failed";
     const text =
       "Your payment for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
@@ -397,7 +404,9 @@ export const workshopRegistrationList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
@@ -424,7 +433,7 @@ export const workshopRegistrationList = async (req, res) => {
     // paymentList.map((user)=>{
     //   console.log(user.workshopPayments);
     // })
-    console.log(registrationList, paymentList)
+    console.log(registrationList, paymentList);
     const final = [...registrationList, ...paymentList];
     //console.log(final);
     res.status(200).json({
@@ -470,7 +479,9 @@ export const workshopPaymentList = async (req, res) => {
         },
       },
     });
-    const workshopsData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'workshops.json'), 'utf-8'))
+    const workshopsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+    );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
@@ -625,7 +636,6 @@ export const Register = async (req, res) => {
     });
   }
 };
-
 
 export const eventRegistrationList = async (req, res) => {
   try {

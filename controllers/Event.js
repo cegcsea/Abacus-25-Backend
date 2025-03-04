@@ -128,7 +128,7 @@ export const workshopRegister = async (req, res) => {
     //   fs.readFileSync(path.join("workshops.json"), "utf-8")
     // );
 
-    const subject = "Reach'25 Workshop Registration Successful";
+    const subject = "Abacus'25 Workshop Registration Successful";
     const text = `Thank you for registering for ${
       workshopsData[req.body.workshopId.toString()]
     } workshop.`;
@@ -269,7 +269,7 @@ export const workshopPaymentScreenshot = async (req, res) => {
     const workshopsData = JSON.parse(
       fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
     );
-    const subject = "Reach'25 Workshop Registration Successful";
+    const subject = "Abacus'25 Workshop Registration Successful";
     const text = `Thank you for registering for the ${
       workshopsData[workshopPayment.workshopId.toString()]
     } workshop. Your payment details will be verified by admin soon.`;
@@ -320,8 +320,8 @@ export const verifyEventPaymentDetails = async (req, res) => {
     });
 
     let alreadyPaid = false;
-    users.forEach((u) => {
-      u.eventPayments.forEach((eventPayment) => {
+    users.foAbacus((u) => {
+      u.eventPayments.foAbacus((eventPayment) => {
         if (
           eventPayment.eventId === req.body.eventId &&
           eventPayment.status !== "FAILURE"
@@ -429,7 +429,9 @@ export const eventPaymentScreenshot = async (req, res) => {
     });
     sendEmail(user.email, subject, text);
 
-    return res.status(200).json({ message: "Screenshot uploaded successfully" });
+    return res
+      .status(200)
+      .json({ message: "Screenshot uploaded successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message, error });
   }
@@ -480,4 +482,3 @@ export const getWorkshops = async (req, res) => {
     });
   }
 };
-

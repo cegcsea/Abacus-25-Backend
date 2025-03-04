@@ -19,13 +19,12 @@ export const Register = async (req, res) => {
         error: "conflict",
         message: "User already registered",
       });
-    }
-   else if (req.body.referralCode !== '') {
+    } else if (req.body.referralCode !== "") {
       const validReferralCode = await prisma.campusAmbassador.findUnique({
-          where: {
-              referralCode: req.body.referralCode
-          }
-      })
+        where: {
+          referralCode: req.body.referralCode,
+        },
+      });
       if (!validReferralCode) {
         return res.status(409).json({
           status: "error",
@@ -33,7 +32,7 @@ export const Register = async (req, res) => {
           message: "Invalid referral code",
         });
       }
-  } else {
+    } else {
       const token = await prisma.registrationToken.findUnique({
         where: {
           email: req.body.email,
@@ -67,12 +66,12 @@ export const Register = async (req, res) => {
             name: req.body.name,
             email: req.params.email,
             mobile: req.body.mobile,
-           // hostCollege: req.body.hostCollege,
+            // hostCollege: req.body.hostCollege,
             year: req.body.year,
             dept: req.body.dept,
             college: req.body.college,
             password: password,
-            referralCode:req.body.referralCode,
+            referralCode: req.body.referralCode,
             accomodation: req.body.accomodation,
           },
         });
@@ -81,9 +80,9 @@ export const Register = async (req, res) => {
             email: req.params.email,
           },
         });
-        const subject = "Reach'25: Registration Successfull!";
+        const subject = "Abacus'25: Registration Successfull!";
         const text =
-          "You have successfully completed Reach'25 registration.\n\n Your Reach ID is " +
+          "You have successfully completed Abacus'25 registration.\n\n Your Abacus ID is " +
           `${user.abacusId}` +
           "\n\n";
         // await sendEmailWithAttachment(subject, text, user, imageBuffer)
@@ -132,7 +131,7 @@ export const Login = async (req, res) => {
         accDetails: true,
       },
     });
-    console.log(user)
+    console.log(user);
     if (!user) {
       return res.status(404).json({
         status: "error",
@@ -223,7 +222,7 @@ export const forgotPassword = async (req, res) => {
     await sendEmail(
       req.body.email,
       "Reset Password Link",
-      "Click the link below to reset password for your Reach'25 account\n" +
+      "Click the link below to reset password for your Abacus'25 account\n" +
         link
     );
     return res.status(200).json({
@@ -338,12 +337,12 @@ export const postQuery = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    if (req.body.referralCode !== '') {
+    if (req.body.referralCode !== "") {
       const validReferralCode = await prisma.campusAmbassador.findUnique({
-          where: {
-              referralCode: req.body.referralCode
-          }
-      })
+        where: {
+          referralCode: req.body.referralCode,
+        },
+      });
       if (!validReferralCode) {
         return res.status(409).json({
           status: "error",
@@ -351,7 +350,7 @@ export const updateProfile = async (req, res) => {
           message: "Invalid referral code",
         });
       }
-  }
+    }
     const updatedUser = await prisma.user.update({
       where: {
         id: req.id,
@@ -381,7 +380,6 @@ export const updateProfile = async (req, res) => {
 
 export const profile = async (req, res) => {
   try {
-
     const user = await prisma.user.findUnique({
       where: {
         id: req.id,
@@ -517,8 +515,8 @@ export const getRegistrationLink = async (req, res) => {
     const link = `${process.env.BASE_URL}/register/${req.body.email}/${secretKey}`;
     await sendEmail(
       req.body.email,
-      "Reach'25: Registration Link",
-      `Click the link below to complete your registration for Reach'25\n\n${link}`
+      "Abacus'25: Registration Link",
+      `Click the link below to complete your registration for Abacus'25\n\n${link}`
     );
     console.log("mail sent");
     res.status(200).json({
