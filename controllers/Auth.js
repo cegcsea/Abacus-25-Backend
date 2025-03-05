@@ -71,9 +71,10 @@ export const Register = async (req, res) => {
             dept: req.body.dept,
             college: req.body.college,
             password: password,
-            referralCode: req.body.referralCode,
+            referralCode: req.body?.referralCode || null,  
             accomodation: req.body.accomodation,
-          },
+        }
+        
         });
         await prisma.registrationToken.delete({
           where: {
@@ -96,6 +97,7 @@ export const Register = async (req, res) => {
       }
     }
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       status: "error",
       error: "something went wrong." + { error },
