@@ -162,7 +162,7 @@ const eventRegisterSchema = joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(7)
+    .max(20)
     .required()
     .messages({
       "number.base": "Event Id must be a number",
