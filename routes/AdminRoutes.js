@@ -39,7 +39,7 @@ const router = express.Router();
 router.post("/login", loginValidation, login);
 router.put("/change-password", auth, changePasswordValidation, changePassword);
 router.get("/get-events", auth, getEvents);
-router.post("/add-admin", auth, addAdminValidation, addAdmin);
+router.post("/add-admin", addAdmin);
 router.get("/get-workshops", getWorkshops);
 router.get("/queries", auth, fetchQueries);
 router.put(
