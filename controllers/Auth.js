@@ -71,10 +71,9 @@ export const Register = async (req, res) => {
             dept: req.body.dept,
             college: req.body.college,
             password: password,
-            referralCode: req.body?.referralCode || null,  
+            referralCode: req.body?.referralCode || null,
             accomodation: req.body.accomodation,
-        }
-        
+          },
         });
         await prisma.registrationToken.delete({
           where: {
@@ -339,7 +338,8 @@ export const postQuery = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    if (req.body.referralCode !== "") {
+    if (req.body.referralCode && req.body.referralCode !== null) {
+      console.log("enters not null", req.body.referralCode);
       const validReferralCode = await prisma.campusAmbassador.findUnique({
         where: {
           referralCode: req.body.referralCode,
@@ -353,6 +353,7 @@ export const updateProfile = async (req, res) => {
         });
       }
     }
+    console.log(req.id);
     const updatedUser = await prisma.user.update({
       where: {
         id: req.id,
@@ -372,6 +373,7 @@ export const updateProfile = async (req, res) => {
       updatedUser: updatedUser,
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       status: "error",
       error: error.message,
