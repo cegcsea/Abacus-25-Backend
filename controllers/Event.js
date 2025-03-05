@@ -320,8 +320,8 @@ export const verifyEventPaymentDetails = async (req, res) => {
     });
 
     let alreadyPaid = false;
-    users.foAbacus((u) => {
-      u.eventPayments.foAbacus((eventPayment) => {
+    users.forEach((u) => {
+      u.eventPayments.forEach((eventPayment) => {
         if (
           eventPayment.eventId === req.body.eventId &&
           eventPayment.status !== "FAILURE"
