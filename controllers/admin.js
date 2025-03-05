@@ -553,8 +553,7 @@ export const setQueryReplied = async (req, res) => {
 export const Register = async (req, res) => {
   try {
     // Extract user details from request body
-    const { email, name, mobile, year, dept, college, hostCollege, password } =
-      req.body;
+    const { email, name, mobile, year, dept, college, password } = req.body;
 
     // Validate required fields
     if (

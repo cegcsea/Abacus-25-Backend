@@ -48,7 +48,7 @@ router.put(
   setQueryRepliedValidation,
   setQueryReplied
 );
-router.post("/register-user", auth, Register);
+router.post("/register-user", Register);
 router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
 router.post("/workshop-unpaid", auth, workshopUnpaid);
 router.post("/workshop-cash-payment", auth, workshopCashPayment);
