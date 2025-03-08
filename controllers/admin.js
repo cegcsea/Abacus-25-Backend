@@ -369,6 +369,8 @@ export const workshopRegistrationList = async (req, res) => {
         // workshops: true,
       },
     });
+    console.log(registrationList);
+
     const users = await prisma.user.findMany({
       where: {
         WorkshopPayment: {

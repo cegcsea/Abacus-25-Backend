@@ -51,7 +51,7 @@ router.put(
 router.post("/register-user", Register);
 router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
 router.post("/workshop-unpaid", auth, workshopUnpaid);
-router.post("/workshop-cash-payment", auth, workshopCashPayment);
+router.post("/workshop-cash-payment",  workshopCashPayment);
 router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
 router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
 router.post("/workshop-registration-list", auth, workshopRegistrationList);
