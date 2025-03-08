@@ -37,21 +37,21 @@ const router = express.Router();
 // Define your routes here
 
 router.post("/login", loginValidation, login);
-router.put("/change-password", auth, changePasswordValidation, changePassword);
+router.put("/change-password", changePasswordValidation, changePassword);
 router.get("/get-events", auth, getEvents);
 router.post("/add-admin", addAdmin);
 router.get("/get-workshops", getWorkshops);
 router.get("/queries", auth, fetchQueries);
 router.put(
   "/set-query-replied",
-  auth,
-  setQueryRepliedValidation,
+  // auth,
+  // setQueryRepliedValidation,
   setQueryReplied
 );
 router.post("/register-user", Register);
 router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
 router.post("/workshop-unpaid", auth, workshopUnpaid);
-router.post("/workshop-cash-payment",  workshopCashPayment);
+router.post("/workshop-cash-payment", workshopCashPayment);
 router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
 router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
 router.post("/workshop-registration-list", auth, workshopRegistrationList);
