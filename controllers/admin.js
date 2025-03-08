@@ -586,7 +586,6 @@ export const Register = async (req, res) => {
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
-
     if (existingUser) {
       return res.status(409).json({
         status: "error",
