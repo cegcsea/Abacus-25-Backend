@@ -538,7 +538,7 @@ export const getRegistrationLink = async (req, res) => {
   }
 };
 export const accomodationDetails = async (req, res) => {
-  console.log(req.id,req.body);
+  console.log(req.id, req.body);
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -563,10 +563,12 @@ export const accomodationDetails = async (req, res) => {
     console.log(accomodationDetails);
     return res.status(200).json({
       message: "Accommodation details inserted successfully",
-      data: {accomodationDetails},
+      data: { accomodationDetails },
     });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: error.message, error });
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Accomodation registration failed!", error });
   }
 };
