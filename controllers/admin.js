@@ -13,6 +13,30 @@ const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 dotenv.config();
+const generateReferralCode = async () => {
+  const upperCaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  let code;
+  let exists = true;
+
+  while (exists) {
+    code = "";
+    for (let i = 0; i < 6; i++) {
+      const index = Math.floor(Math.random() * 26);
+      code += upperCaseChars.charAt(index);
+    }
+
+    const existing = await prisma.CampusAmbassador.findFirst({
+      where: { referralCode: code },
+    });
+
+    if (!existing) {
+      exists = false;
+    }
+  }
+
+  return code;
+};
 
 export const login = async (req, res) => {
   try {
@@ -43,6 +67,51 @@ export const login = async (req, res) => {
     console.log("Generated Token:", token); // Log the token
 
     return res.status(200).json({ message: "Login successful", token: token });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error: error });
+  }
+};
+export const registerCa = async (req, res) => {
+  try {
+    console.log(req.body.email);
+    req.body.email = req.body.email.toLowerCase();
+    const existingUser = await prisma.CampusAmbassador.findUnique({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (existingUser) {
+      res.status(409).json({ message: "Campus ambassador already registered" });
+      return;
+    }
+    const rfcode = await generateReferralCode();
+    //Register User
+    const campusAmbassador = await prisma.CampusAmbassador.create({
+      data: {
+        name: req.body.name,
+        email: req.body.email,
+        college: req.body.college,
+        referralCode: rfcode,
+      },
+    });
+    console.log(campusAmbassador);
+
+    const subject = "Registration for Campus Ambassador Successfull";
+    const text =
+      "<p>You have successfully completed the registration for being the <strong>Campus Ambassador of ABACUS'25.</strong>\n\n Your referral code is <strong>" +
+      `${rfcode}` +
+      "</strong>\n\n</p>" +
+      "<p><strong>Spread the word:</strong>  Share your unique referral code with your network.</p>" +
+      "<p><strong>Win big: </strong>Top performers earn amazing prizes, goodies, and exclusive access to a FREE tech-boosting workshop at our symposium!</p>" +
+      "<h2>Earn points:</h2><ul><li>2 points: User registrations</li><li>3 points: General event registrations</li><li>5 points: Paid event registrations</li><li>20 points: Workshop registrations</li></ul>" +
+      "<p><strong>Note:</strong> Encourage users to enter your code during registration for you to receive points. Registrations are now open at <a href='https://www.abacus.org.in'>https://www.abacus.org.in</a>. They can also update their profile later if they miss it initially.</p>" +
+      "<p>Let's make this a success together!</p>" +
+      "Join the WhatsApp Group for more Updates: <a href='https://chat.whatsapp.com/B76XEUUwsGV9MkAkirc3c6'>https://chat.whatsapp.com/B76XEUUwsGV9MkAkirc3c6</a>";
+    await sendEmail(campusAmbassador.email, subject, text);
+    return res
+      .status(200)
+      .json({ message: "Campus Ambassador Registered Successfully!" });
   } catch (error) {
     return res.status(500).json({ message: error.message, error: error });
   }
@@ -587,7 +656,6 @@ export const Register = async (req, res) => {
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
-
     if (existingUser) {
       return res.status(409).json({
         status: "error",

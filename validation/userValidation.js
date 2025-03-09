@@ -280,6 +280,9 @@ const updateProfileSchema = joi.object({
   college: joi.string().required().messages({
     "string.empty": "College is required",
   }),
+  accomodation: joi.boolean().required().messages({
+    "boolean.empty": "Accomodation choice required",
+  }),
 });
 const querySchema = joi.object({
   name: joi.string().required().messages({
