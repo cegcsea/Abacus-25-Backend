@@ -38,27 +38,27 @@ const router = express.Router();
 // Define your routes here
 
 router.post("/login", loginValidation, login);
-router.put("/change-password", changePasswordValidation, changePassword);
+router.put("/change-password", auth, changePasswordValidation, changePassword);
 router.get("/get-events", auth, getEvents);
-router.post("/add-admin", addAdmin);
-router.get("/get-workshops", getWorkshops);
+router.post("/add-admin", auth, addAdmin);
+router.get("/get-workshops", auth, getWorkshops);
 router.get("/queries", auth, fetchQueries);
 router.put(
   "/set-query-replied",
-  // auth,
+  auth,
   // setQueryRepliedValidation,
   setQueryReplied
 );
-router.post("/register-user", Register);
+router.post("/register-user", auth, Register);
 router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
 router.post("/workshop-unpaid", auth, workshopUnpaid);
-router.post("/workshop-cash-payment", workshopCashPayment);
+router.post("/workshop-cash-payment", auth, workshopCashPayment);
 router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
 router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
 router.post("/workshop-registration-list", auth, workshopRegistrationList);
-router.post("/event-registration-list", eventRegistrationList);
+router.post("/event-registration-list", auth, eventRegistrationList);
 router.post("/workshop-payment-list", auth, workshopPaymentList);
-router.post("/register-ca", registerCa);
+router.post("/register-ca", auth, registerCa);
 router.post(
   "/workshop-payment-screenshot/:workshopPaymentId",
   auth,
