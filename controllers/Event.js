@@ -409,7 +409,7 @@ export const eventPaymentScreenshot = async (req, res) => {
     });
 
     let subject, text;
-    if (eventPayment.eventId === 10) {
+    if (eventPayment.eventId === 20) {
       subject = "Abacus'25 Accommodation Registration Successful";
       text =
         "Thank you for registering for accommodation during Abacus'25. Your payment details will be verified by admin soon.";
