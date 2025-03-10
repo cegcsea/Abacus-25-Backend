@@ -107,7 +107,7 @@ export const registerCa = async (req, res) => {
       "<h2>Earn points:</h2><ul><li>2 points: User registrations</li><li>3 points: General event registrations</li><li>5 points: Paid event registrations</li><li>20 points: Workshop registrations</li></ul>" +
       "<p><strong>Note:</strong> Encourage users to enter your code during registration for you to receive points. Registrations are now open at <a href='https://www.abacus.org.in'>https://www.abacus.org.in</a>. They can also update their profile later if they miss it initially.</p>" +
       "<p>Let's make this a success together!</p>" +
-      "Join the WhatsApp Group for more Updates: <a href='https://chat.whatsapp.com/B76XEUUwsGV9MkAkirc3c6'>https://chat.whatsapp.com/B76XEUUwsGV9MkAkirc3c6</a>";
+      "Join the WhatsApp Group for more Updates: <a href='https://chat.whatsapp.com/IbNwD25NwUyBXznNaLZ1s0'>https://chat.whatsapp.com/IbNwD25NwUyBXznNaLZ1s0</a>";
     await sendEmail(campusAmbassador.email, subject, text);
     return res
       .status(200)
