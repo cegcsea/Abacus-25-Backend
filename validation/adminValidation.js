@@ -96,6 +96,163 @@ const setQueryRepliedSchema = Joi.object({
     })
 });
 
+const registerUserSchema = joi.object({
+    name: joi.string().required().messages({
+        'string.empty': 'Name is required'
+    }),
+    email: joi.string().email().required().messages({
+        'string.empty': 'Email is required.',
+        'string.base': 'Email must be a string.',
+        'string.email': 'Invalid email format. Please provide a valid email address.',
+    }),
+    mobile: joi.string().pattern(/^[0-9]{10}$/).required().messages({
+        'string.pattern.base': 'Mobile number must be of 10 digits',
+        'string.empty': 'Mobile number is required'
+    }),
+    dept: joi.string().required().regex(/^[A-Za-z ]+$/).messages({
+        'string.empty': 'Department is required',
+        'string.pattern.base': 'Invalid department name. Only characters are allowed.'
+    }),
+    year: joi.number().required().min(1).max(5).messages({
+        'number.base': 'Year must be a number',
+        'number.empty': 'Year is required',
+        'number.min': 'Year must be atleast 1',
+        'number.max': 'Year must be atmost 5'
+    }),
+    college: joi.string().required().messages({
+        'string.empty': 'College is required'
+    }),
+    password: joi.string().required().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%#*?&]{8,}$/).messages({
+        'string.base': 'Password must be a string.',
+        'string.empty': 'Password is required.',
+        'string.min': 'Password must be at least 8 characters long.',
+        'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).',
+    }),
+    accomodation: joi.boolean().required().messages({
+        'boolean.empty': 'Accomodation choice is required'
+    }),
+    referralCode: joi.string().allow('').optional().messages({
+        'string.base': 'Referral Code must be a string'
+    })
+})
+const registerCaSchema = joi.object({
+    name: joi.string().required().messages({
+        'string.empty': 'Name is required'
+    }),
+    college: joi.string().required().messages({
+        'string.empty': 'College is required'
+    }),
+    email: joi.string().email().required().messages({
+        'string.empty': 'Email is required.',
+        'string.base': 'Email must be a string.',
+        'string.email': 'Invalid email format. Please provide a valid email address.',
+    })
+})
+const registerEventSchema = joi.object({
+    eventId: joi.number().strict().precision(0).min(1).max(20).required().messages({
+        'any.required': 'Event Id is required',
+        'number.base': 'Event Id must be a number',
+        'number.precision': 'Event Id must be a number',
+        'number.min': 'Event Id should range between 1 and 20',
+        'number.max': 'Event Id should range between 1 and 20'
+    }),
+    userId: joi.number().strict().precision(0).min(1).required().messages({
+        'number.base': 'User Id must be a number',
+        'number.empty': 'User Id is required',
+        'number.precision': 'User Id must be a number',
+        'number.min': 'User Id must be atleast 1'
+    })
+})
+const eventUnpaidSchema = joi.object({
+    workshopId: joi.number().strict().precision(0).min(1).max(20).required().messages({
+        'any.required': 'Event Id is required',
+        'number.base': 'Event Id must be a number',
+        'number.precision': 'Event Id must be a number',
+        'number.min': 'Event Id should range between 1 and 20',
+        'number.max': 'Event Id should range between 1 and 20'
+    })
+})
+const eventCashPaymentSchema = joi.object({
+    users: joi.array().items(joi.number().integer()).required().messages({
+        'array.base': 'Input must be an array',
+        'number.base': 'Each id in the array must be a number',
+        'number.integer': 'Each id in the array must be an integer',
+    }),
+    workshopId: joi.number().strict().precision(0).min(1).max(20).required().messages({
+        'any.required': 'Event Id is required',
+        'number.base': 'Event Id must be a number',
+        'number.precision': 'Event Id must be a number',
+        'number.min': 'Event Id should range between 1 and 20',
+        'number.max': 'Event Id should range between 1 and 20'
+    }),
+    day0: joi.boolean().optional().messages({
+        'boolean.empty': 'Day 0 choice is required'
+    }),
+    day1: joi.boolean().optional().messages({
+        'boolean.empty': 'Day 1 choice is required'
+    }),
+    day2: joi.boolean().optional().messages({
+        'boolean.empty': 'Day 2 choice is required'
+    }),
+    day3: joi.boolean().optional().messages({
+        'boolean.empty': 'Day 3 choice is required'
+    }),
+    food: joi.boolean().optional().messages({
+        'boolean.empty': 'Food choice is required'
+    })
+})
+const eventPaymentSchema = joi.object({
+    id: joi.number().required().messages({
+        'number.base': 'ID must be a number',
+        'string.empty': 'ID is required',
+        'any.required': 'ID is required',
+    })
+})
+const fetchUserSchema = joi.object({
+    abacusId: joi.number().strict().precision(0).min(1).max(3000).required().messages({
+        'any.required': 'Abacus Id is required',
+        'number.base': 'Abacus Id must be a number',
+        'number.precision': 'Abacus Id must be a number',
+        'number.min': 'Abacus Id should range between 1 and 3000',
+        'number.max': 'Abacus Id should range between 1 and 3000'
+    })
+})
+const updateUserSchema = joi.object({
+    abacusId: joi.number().strict().precision(0).min(1).max(3000).required().messages({
+        'any.required': 'Abacus Id is required',
+        'number.base': 'Abacus Id must be a number',
+        'number.precision': 'Abacus Id must be a number',
+        'number.min': 'Abacus Id should range between 1 and 3000',
+        'number.max': 'Abacus Id should range between 1 and 3000'
+    }),
+    name: joi.string().required().messages({
+        'string.empty': 'Name is required'
+    }),
+    mobile: joi.string().pattern(/^[0-9]{10}$/).required().messages({
+        'string.pattern.base': 'Mobile number must be of 10 digits',
+        'string.empty': 'Mobile number is required'
+    }),
+    dept: joi.string().required().regex(/^[A-Za-z ]+$/).messages({
+        'string.empty': 'Department is required',
+        'string.pattern.base': 'Invalid department name. Only characters are allowed.'
+    }),
+    year: joi.number().required().min(1).max(5).messages({
+        'number.base': 'Year must be a number',
+        'number.empty': 'Year is required',
+        'number.min': 'Year must be atleast 1',
+        'number.max': 'Year must be atmost 5'
+    }),
+    college: joi.string().required().messages({
+        'string.empty': 'College is required'
+    }),
+    accomodation: joi.boolean().required().messages({
+        'boolean.empty': 'Accomodation choice is required'
+    }),
+    referralCode: joi.string().allow('').optional().messages({
+        'string.base': 'Referral Code must be a string'
+    }),
+});
+
 const loginValidation = (req, res, next) => {
     const { error } = adminSchema.validate(req.body);
     if (error) {
@@ -160,6 +317,70 @@ const setQueryRepliedValidation = (req, res, next) => {
     next();
 };
 
+const registerUserValidation = (req, res, next) => {
+    const { error } = registerUserSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+    }
+    next();
+}
+const registerCaValidation = (req, res, next) => {
+    const { error } = registerCaSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const registerEventValidation = (req, res, next) => {
+    const { error } = registerEventSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const eventUnpaidValidation = (req, res, next) => {
+    const { error } = eventUnpaidSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const eventCashPaymentValidation = (req, res, next) => {
+    const { error } = eventCashPaymentSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const eventPaymentValidation = (req, res, next) => {
+    const { error } = eventPaymentSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const fetchUserValidation = (req, res, next) => {
+    const { error } = fetchUserSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+const updateUserValidation = (req, res, next) => {
+    const { error } = updateUserSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+        return;
+    }
+    next();
+}
+
 export {
     loginValidation,
     addAdminValidation,
@@ -168,5 +389,13 @@ export {
     workshopCashPaymentValidation,
     workshopPaymentValidation,
     workshopListValidation,
-    setQueryRepliedValidation
+    setQueryRepliedValidation,
+    updateUserValidation,
+    fetchUserValidation,
+    eventPaymentValidation,
+    eventCashPaymentValidation,
+    eventUnpaidValidation,
+    registerEventValidation,
+    registerCaValidation,
+    registerUserValidation
 };

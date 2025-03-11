@@ -133,7 +133,7 @@ export const addAdmin = async (req, res) => {
     //New Admin
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
     const password = await bcrypt.hash(req.body.password, salt);
-
+    console.log(existingAdmin)
     const admin = await prisma.admin.create({
       data: {
         name: req.body.name,
@@ -141,7 +141,7 @@ export const addAdmin = async (req, res) => {
         password: password,
       },
     });
-
+    console.log(admin)
     const subject = "Admin added successfully";
     const text =
       "You have been granted administrative access to Abacus'25\\n\n Thank you\n\n";
