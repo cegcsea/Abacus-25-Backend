@@ -133,7 +133,7 @@ export const addAdmin = async (req, res) => {
     //New Admin
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
     const password = await bcrypt.hash(req.body.password, salt);
-    console.log(existingAdmin)
+    console.log(existingAdmin);
     const admin = await prisma.admin.create({
       data: {
         name: req.body.name,
@@ -141,7 +141,7 @@ export const addAdmin = async (req, res) => {
         password: password,
       },
     });
-    console.log(admin)
+    console.log(admin);
     const subject = "Admin added successfully";
     const text =
       "You have been granted administrative access to Abacus'25\\n\n Thank you\n\n";
@@ -280,6 +280,7 @@ export const workshopUnpaid = async (req, res) => {
   }
 };
 export const workshopCashPayment = async (req, res) => {
+  console.log(req.body);
   try {
     const connectedUsers = req.body.users.map((user) => {
       return { id: user };
@@ -318,11 +319,11 @@ export const workshopCashPayment = async (req, res) => {
       await sendEmail(userEmail, subject, text);
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Cash Payment done successful and workshop registered",
     });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -372,8 +373,8 @@ export const workshopPaymentSuccess = async (req, res) => {
       .json({ message: "Payment done successful and workshop registered" });
   } catch (error) {
     if (error.code === "P2025")
-      res.status(404).json({ message: "Invalid Transaction ID" });
-    else res.status(500).json({ message: error.message, error });
+      return res.status(404).json({ message: "Invalid Transaction ID" });
+    else return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -409,11 +410,11 @@ export const workshopPaymentFailure = async (req, res) => {
       await sendEmail(userEmail, subject, text);
     }
 
-    res.status(200).json({ message: "Payment Failed" });
+    return res.status(200).json({ message: "Payment Failed" });
   } catch (error) {
     if (error.code === "P2025")
-      res.status(404).json({ message: "Invalid Transaction ID" });
-    else res.status(500).json({ message: error.message, error });
+      return res.status(404).json({ message: "Invalid Transaction ID" });
+    else return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -507,12 +508,12 @@ export const workshopRegistrationList = async (req, res) => {
     console.log(registrationList, paymentList);
     const final = [...registrationList, ...paymentList];
     //console.log(final);
-    res.status(200).json({
+    return res.status(200).json({
       message: "Workshop Registration List fetched successfully",
       data: final,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -574,12 +575,12 @@ export const workshopPaymentList = async (req, res) => {
       });
     });
     console.log(paymentList);
-    res.status(200).json({
+    return res.status(200).json({
       message: "Workshop Payment List fetched successfully",
       data: paymentList,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -594,7 +595,7 @@ export const fetchQueries = async (req, res) => {
       .status(200)
       .json({ message: "Queries fetched successfully", data: queries });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -614,9 +615,9 @@ export const setQueryReplied = async (req, res) => {
     });
     console.log("Query:", query);
 
-    res.status(200).json({ message: "Updated successfully" });
+    return res.status(200).json({ message: "Updated successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
   }
 };
 
@@ -624,7 +625,17 @@ export const setQueryReplied = async (req, res) => {
 export const Register = async (req, res) => {
   try {
     // Extract user details from request body
-    const { email, name, mobile, year, dept, college, password } = req.body;
+    const {
+      email,
+      name,
+      mobile,
+      year,
+      dept,
+      college,
+      password,
+      accomodation,
+      referralCode,
+    } = req.body;
 
     // Validate required fields
     if (
@@ -634,7 +645,7 @@ export const Register = async (req, res) => {
       !year ||
       !dept ||
       !college ||
-      //!hostCollege ||
+      !accomodation ||
       !password
     ) {
       return res.status(400).json({
@@ -676,8 +687,9 @@ export const Register = async (req, res) => {
         year: parseInt(year),
         dept,
         college,
-        //hostCollege,
+        accomodation,
         password: hashedPassword,
+        referralCode: referralCode || null,
       },
     });
 
@@ -728,11 +740,592 @@ export const eventRegistrationList = async (req, res) => {
       },
     });
     console.log(registrationList);
-    res.status(200).json({
+    return res.status(200).json({
       message: "Workshop Registration List fetched successfully",
       data: registrationList,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message, error });
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventsUnregistered = async (req, res) => {
+  try {
+    const registrationList = await prisma.user.findMany({
+      where: {
+        events: {
+          none: {
+            eventId: req.body.eventId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        abacusId: true,
+        name: true,
+        college: true,
+        email: true,
+        mobile: true,
+        dept: true,
+        year: true,
+        accomodation: true,
+        referralCode: true,
+      },
+    });
+    return res.status(200).json({
+      message: "Users haven't registered fetched successfully",
+      registrationList,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const registerEvent = async (req, res) => {
+  try {
+    const eventEntry = await prisma.event.create({
+      data: {
+        userId: req.body.userId,
+        eventId: req.body.eventId,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Event registered successfully",
+      eventEntry,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const pendingEventsPayments = async (req, res) => {
+  try {
+    const payments = await prisma.eventPayment.findMany({
+      where: {
+        status: "PENDING",
+      },
+      select: {
+        id: true,
+        eventId: true,
+        paymentMobile: true,
+        screenshot: true,
+        transactionId: true,
+        users: {
+          select: {
+            abacusId: true,
+            name: true,
+            email: true,
+            mobile: true,
+            accDetails: {
+              select: {
+                amount: true,
+                day0: true,
+                day1: true,
+                day2: true,
+                day3: true,
+                food: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const eventsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+    );
+    const pendingPayments = payments.map((payment) => {
+      const days = payment.users[0].accDetails;
+      const count = days?.day0 + days?.day1 + days?.day2 + days?.day3;
+      return {
+        id: payment.id,
+        users: payment.users,
+        eventId: payment.eventId,
+        eventName: eventsData[payment.eventId.toString()],
+        transactionId: payment.transactionId,
+        paymentMobile: payment.paymentMobile,
+        screenshot: payment.screenshot,
+        amount:
+          payment.eventId === 20 ? payment.users[0].accDetails?.amount : null,
+        days: payment.eventId === 20 ? count : null,
+        food:
+          payment.eventId === 20
+            ? payment.users[0].accDetails?.food
+              ? "Yes"
+              : "No"
+            : null,
+      };
+    });
+    return res.status(200).json({
+      message: "Pending Payment List fetched successfully",
+      pendingPayments,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventUnpaid = async (req, res) => {
+  try {
+    const usersWithoutPayments = await prisma.user.findMany({
+      where: {
+        eventPayments: {
+          none: {
+            eventId: req.body.EventId,
+            status: {
+              in: ["SUCCESS", "PENDING"],
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        abacusId: true,
+        name: true,
+        email: true,
+        mobile: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Users unpaid for the event",
+      usersWithoutPayments,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventCashPayment = async (req, res) => {
+  try {
+    const connectedUsers = req.body.users.map((user) => {
+      return { id: user };
+    });
+    if (req.body.EventId === 20) {
+      let amount =
+        req.body.day0 + req.body.day1 + req.body.day2 + req.body.day3;
+      if (req.body.food) {
+        amount = amount * 400;
+      } else {
+        amount = amount * 250;
+      }
+      await prisma.accomodation.create({
+        data: {
+          userId: connectedUsers[0].id,
+          day0: req.body.day0,
+          day1: req.body.day1,
+          day2: req.body.day2,
+          day3: req.body.day3,
+          food: req.body.food,
+          amount: amount,
+          paid: true,
+        },
+      });
+    }
+    const eventPaymentEntry = await prisma.eventPayment.create({
+      data: {
+        eventId: req.body.EventId,
+        paymentMobile: "CASH",
+        screenshot: "CASH - " + Date.now(),
+        status: "SUCCESS",
+        verifiedBy: req.id,
+        transactionId: "CASH - " + Date.now(),
+        users: {
+          connect: connectedUsers,
+        },
+      },
+      include: {
+        users: true,
+      },
+    });
+    const eventsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+    );
+    let subject = "";
+    let text = "";
+    if (req.body.EventId === 20) {
+      subject = "Abacus'25 Accommodation Payment done successfully";
+      text =
+        "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
+        "<strong>Terms and Conditions</strong>" +
+        "<ul><li>Refundable Rs.400 to be paid as caution deposit on the day of room allotment.</li><li>Accommodation will be provided in CEG Hostels.</li><li>Adhaar card Xerox and college ID Xerox need to be submitted during accommodation.</li><li>Refunds cannot be availed after payment confirmation. Only Caution deposit will be refunded.</li><li>Need to vacate on time or prior information should be given for overstay subject to availability.</li><li>Participants are solely responsible for their belongings.</li><li>Intime has to be followed strictly, Girls - 8.30 PM and Boys - 9.00 PM</li><li>Accommodation desk will be available only from 9 am to 5 pm.</li> <li>For any queries during other hours kindly contact,</li>" +
+        "<ol><li>Sowfiya Hasna - <a href='tel:9445249664'>+91 9445249664</a></li><li>Madhumithran - <a href='tel:9566622358'>+91 9566622358</a></li></ol> </ul>" +
+        "<strong>Mess Timings</strong>" +
+        "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
+        "<strong>Venue</strong>\n" +
+        "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
+      ("\nWe look forward to welcoming you to Abacus'25!\n\n");
+    } else {
+      subject = "Abacus'25 Event Cash Payment done successfully";
+      text =
+        "You have successfully registered for the " +
+        eventsData[req.body.EventId.toString()] +
+        " event\n\n Thank you\n\n";
+    }
+    for (let i = 0; i < eventPaymentEntry.users.length; i++) {
+      const userEmail = eventPaymentEntry.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
+
+    return res.status(200).json({
+      message: "Cash Payment done successful and event registered",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventPaymentSuccess = async (req, res) => {
+  console.log(req.body);
+  try {
+    const updateEvent = await prisma.eventPayment.update({
+      where: {
+        transactionId: req.body.transactionId,
+        status: "PENDING",
+      },
+      data: {
+        status: "SUCCESS",
+        verifiedBy: req.id,
+      },
+      include: {
+        users: true,
+      },
+    });
+    console.log(updateEvent);
+    fs.unlink(
+      path.join(__dirname, "../images/" + updateEvent.screenshot),
+      (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+        }
+      }
+    );
+    let subject = "";
+    let text = "";
+    if (updateEvent.eventId === 20) {
+      const accomodation = await prisma.accomodation.update({
+        where: {
+          userId: updateEvent.users[0].id,
+        },
+        data: {
+          paid: true,
+        },
+      });
+      subject = "Abacus'25 Accommodation Payment done successfully";
+      text =
+        "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
+        "<strong>Terms and Conditions</strong>" +
+        "<ul><li>Refundable Rs.400 to be paid as caution deposit on the day of room allotment.</li><li>Accommodation will be provided in CEG Hostels.</li><li>Adhaar card Xerox and college ID Xerox need to be submitted during accommodation.</li><li>Refunds cannot be availed after payment confirmation. Only Caution deposit will be refunded.</li><li>Need to vacate on time or prior information should be given for overstay subject to availability.</li><li>Participants are solely responsible for their belongings.</li><li>Intime has to be followed strictly, Girls - 8.30 PM and Boys - 9.00 PM</li><li>Accommodation desk will be available only from 9 am to 5 pm.</li> <li>For any queries during other hours kindly contact,</li>" +
+        "<ol><li>Amritha - <a href='tel:9345563841'>+91 93455 63841</a></li><li>Harrin Viknesh - <a href='tel:8428292201'>+91 84282 92201</a></li><li>Yalini - <a href='tel:9790470161'>+91 97904 70161</a></li></ol> </ul>" +
+        "<strong>Mess Timings</strong>" +
+        "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
+        "<strong>Venue</strong>\n\n" +
+        "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
+      ("\nWe look forward to welcoming you to Abacus'25!\n\n");
+    } else {
+      const eventsData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      );
+      subject = "Abacus'25 Event Payment done successfully";
+      text =
+        "You have successfully registered for the " +
+        eventsData[updateEvent.eventId.toString()] +
+        " event\n\n Thank you\n\n";
+    }
+    for (let i = 0; i < updateEvent.users.length; i++) {
+      const userEmail = updateEvent.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
+    return res.status(200).json({
+      message: "Payment done successful and event/accommodation registered",
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.code === "P2025")
+      return res.status(404).json({ message: "Invalid Transaction ID" });
+    else res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventPaymentFailure = async (req, res) => {
+  try {
+    const updateEvent = await prisma.eventPayment.update({
+      where: {
+        id: req.body.id,
+        status: "PENDING",
+      },
+      data: {
+        status: "FAILURE",
+        verifiedBy: req.id,
+      },
+      include: {
+        users: true,
+      },
+    });
+    if (updateEvent.eventId === 20) {
+      const accomodation = await prisma.accomodation.delete({
+        where: {
+          userId: updateEvent.users[0].id,
+        },
+      });
+      subject = "Abacus'25 Accommodation Payment Failed";
+      text =
+        "Your payment for accommodation during Abacus'25 has failed.\n\n Thank you\n\n";
+    } else {
+      const eventsData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      );
+      subject = "Abacus'25 Event Payment failed";
+      text =
+        "Your payment for the " +
+        eventsData[updateEvent.eventId.toString()] +
+        " event is failed.\n\n Thank you\n\n";
+    }
+    for (let i = 0; i < updateEvent.users.length; i++) {
+      const userEmail = updateEvent.users[i].email;
+      await sendEmail(userEmail, subject, text);
+    }
+
+    return res.status(200).json({
+      message: "User fetched successfully",
+    });
+  } catch (error) {
+    if (error.code === "P2025")
+      return res.status(404).json({ message: "Invalid Transaction ID" });
+    else return res.status(500).json({ message: error.message, error });
+  }
+};
+export const fetchUser = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        abacusId: req.body.abacusId,
+      },
+      select: {
+        abacusId: true,
+        name: true,
+        college: true,
+        email: true,
+        mobile: true,
+        dept: true,
+        year: true,
+        accomodation: true,
+        referralCode: true,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not Found" });
+    }
+    return res.status(200).json({
+      message: "User fetched successfully",
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const updateUser = async (req, res) => {
+  try {
+    if (req.body.referralCode !== "") {
+      const validReferralCode = await prisma.campusAmbassador.findUnique({
+        where: {
+          referralCode: req.body.referralCode,
+        },
+      });
+      if (!validReferralCode) {
+        return res.status(409).json({ message: "Invalid referral code" });
+      }
+    }
+    const user = await prisma.user.update({
+      where: {
+        abacusId: req.body.abacusId,
+      },
+      data: {
+        name: req.body.name,
+        mobile: req.body.mobile,
+        year: req.body.year,
+        dept: req.body.dept,
+        college: req.body.college,
+        accomodation: req.body.accomodation,
+        referralCode:
+          req.body.referralCode !== "" ? req.body.referralCode : null,
+      },
+    });
+    return res.status(200).json({
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const referralCodeDetails = async (req, res) => {
+  try {
+    var result = [];
+    const ambassadors = await prisma.campusAmbassador.findMany({
+      select: {
+        name: true,
+        email: true,
+        college: true,
+        users: {
+          select: {
+            events: true,
+            eventPayments: {
+              where: {
+                status: {
+                  in: ["SUCCESS"],
+                },
+                eventId: {
+                  not: 20,
+                },
+              },
+            },
+            workshopPayments: {
+              where: {
+                status: {
+                  in: ["SUCCESS"],
+                },
+              },
+            },
+          },
+        },
+        referralCode: true,
+      },
+    });
+    for (const ambassador of ambassadors) {
+      let events = 0;
+      let workshops = 0;
+      let users = 0;
+      let paidEvents = 0;
+      for (const user of ambassador.users) {
+        users += 10;
+        events += user.events.length * 3;
+        paidEvents += user.eventPayments.length * 15;
+        workshops += user.workshopPayments.length * 100;
+      }
+      result.push({
+        name: ambassador.name,
+        email: ambassador.email,
+        college: ambassador.college,
+        referralCode: ambassador.referralCode,
+        users: users,
+        freeEvents: events,
+        paidEvents: paidEvents,
+        workshops: workshops,
+        total: users + events + paidEvents + workshops,
+      });
+    }
+    result.sort(function (a, b) {
+      return b.total - a.total;
+    });
+
+    return res.status(200).json({
+      message: "Mail sent successfully",
+      result,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const fetchAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        abacusId: true,
+        name: true,
+        college: true,
+        email: true,
+        mobile: true,
+        dept: true,
+        year: true,
+        accomodation: true,
+        referralCode: true,
+      },
+    });
+    return res.status(200).json({
+      message: "Users fetched successfully",
+      users,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const sendOlpcLink = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        events: {
+          some: {
+            eventId: 5401,
+          },
+        },
+      },
+    });
+    for (let i = 0; i < users.length; i++) {
+      const subject = "Abacus'25 OLPC Registration Successfull";
+      const text =
+        "Thank you for registering for OLPC - Online Programming Contest - Abacus'25. We're excited to have you join the competition.\n\n Put your coding skills to the test and compete for amazing prizes!  Click the button below to access the contest.\n\n We wish you all the very best for the contest. Kindly ensure that you register for the contest on GeeksForGeeks with this same email.\n\n";
+      const link =
+        "https://practice.geeksforgeeks.org/contest/online-programming-contest-abacus24-ceg-anna-university";
+      await sendEmailWithLink(users[i].email, subject, text, link);
+    }
+
+    return res.status(200).json({
+      message: "Mail sent successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const eventPaymentList = async (req, res) => {
+  try {
+    const payments = await prisma.eventPayment.findMany({
+      where: {
+        eventId: req.body.EventId,
+      },
+      select: {
+        id: true,
+        eventId: true,
+        paymentMobile: true,
+        screenshot: true,
+        transactionId: true,
+        status: true,
+        admin: {
+          select: {
+            name: true,
+          },
+        },
+        users: {
+          select: {
+            abacusId: true,
+            name: true,
+            email: true,
+            mobile: true,
+          },
+        },
+      },
+    });
+    const eventsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+    );
+    let paymentList = [];
+    for (let i = 0; i < payments.length; i++) {
+      for (let j = 0; j < payments[i].users.length; j++) {
+        paymentList.push({
+          paymentId: payments[i].id,
+          name: payments[i].users[j].name,
+          email: payments[i].users[j].email,
+          mobile: payments[i].users[j].mobile,
+          abacusId: payments[i].users[j].abacusId,
+          workshopId: payments[i].workshopId,
+          eventName: eventsData[payments[i].eventId.toString()],
+          transactionId: payments[i].transactionId,
+          paymentMobile: payments[i].paymentMobile,
+          screenshot: payments[i].screenshot,
+          admin: payments[i].admin?.name,
+          status: payments[i].status,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      message: "Event Payment List fetched successfully",
+      paymentList,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
   }
 };

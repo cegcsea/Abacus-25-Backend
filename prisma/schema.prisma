@@ -74,7 +74,7 @@ model EventPayment {
   id            Int      @id @default(autoincrement())
   eventId       Int
   paymentMobile String
-  transactionId String
+  transactionId String   @unique
   screenshot    String?  @unique
   status        Status
   verifiedBy    Int?

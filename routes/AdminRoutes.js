@@ -3,17 +3,29 @@ import auth from "../middlewares/adminAuth.js";
 import upload from "../middlewares/upload.js";
 import {
   loginValidation,
-  changePasswordValidation,
   addAdminValidation,
+  changePasswordValidation,
+  workshopUnpaidValidation,
+  workshopCashPaymentValidation,
+  workshopPaymentValidation,
+  workshopListValidation,
   setQueryRepliedValidation,
+  updateUserValidation,
+  fetchUserValidation,
+  eventPaymentValidation,
+  eventCashPaymentValidation,
+  eventUnpaidValidation,
+  registerEventValidation,
+  registerCaValidation,
+  registerUserValidation,
+  eventListValidation,
+  eventPaymentListValidation,
 } from "../validation/adminValidation.js";
 
 import {
   login,
   addAdmin,
   changePassword,
-  fetchQueries,
-  setQueryReplied,
   pendingWorkshopsPayments,
   workshopUnpaid,
   workshopCashPayment,
@@ -21,9 +33,24 @@ import {
   workshopPaymentFailure,
   workshopRegistrationList,
   workshopPaymentList,
+  fetchQueries,
+  setQueryReplied,
   eventRegistrationList,
   Register,
   registerCa,
+  eventsUnregistered,
+  registerEvent,
+  pendingEventsPayments,
+  eventUnpaid,
+  eventCashPayment,
+  eventPaymentSuccess,
+  eventPaymentFailure,
+  fetchUser,
+  updateUser,
+  eventPaymentList,
+  referralCodeDetails,
+  fetchAllUsers,
+  sendOlpcLink,
 } from "../controllers/admin.js";
 
 import {
@@ -38,32 +65,92 @@ const router = express.Router();
 // Define your routes here
 
 router.post("/login", loginValidation, login);
+router.post("/add-admin", auth, addAdminValidation, addAdmin);
 router.put("/change-password", auth, changePasswordValidation, changePassword);
-router.get("/get-events", auth, getEvents);
-router.post("/add-admin", auth, addAdmin);
-router.get("/get-workshops", auth, getWorkshops);
+router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
+router.post("/workshop-unpaid", auth, workshopUnpaidValidation, workshopUnpaid);
+router.post(
+  "/workshop-cash-payment",
+  auth,
+  workshopCashPaymentValidation,
+  workshopCashPayment
+);
+router.post(
+  "/workshop-payment-success",
+  auth,
+  workshopPaymentValidation,
+  workshopPaymentSuccess
+);
+router.post(
+  "/workshop-payment-failure",
+  auth,
+  workshopPaymentValidation,
+  workshopPaymentFailure
+);
+router.post(
+  "/workshop-registration-list",
+  auth,
+  workshopListValidation,
+  workshopRegistrationList
+);
+router.post(
+  "/event-registration-list",
+  auth,
+  eventListValidation,
+  eventRegistrationList
+);
+router.post(
+  "/workshop-payment-list",
+  auth,
+  workshopListValidation,
+  workshopPaymentList
+);
 router.get("/queries", auth, fetchQueries);
-router.put(
+router.post(
   "/set-query-replied",
   auth,
-  // setQueryRepliedValidation,
+  setQueryRepliedValidation,
   setQueryReplied
 );
-router.post("/register-user", auth, Register);
-router.get("/pendingWorkshopsPayments", auth, pendingWorkshopsPayments);
-router.post("/workshop-unpaid", auth, workshopUnpaid);
-router.post("/workshop-cash-payment", auth, workshopCashPayment);
-router.post("/workshop-payment-success", auth, workshopPaymentSuccess);
-router.post("/workshop-payment-failure", auth, workshopPaymentFailure);
-router.post("/workshop-registration-list", auth, workshopRegistrationList);
-router.post("/event-registration-list", auth, eventRegistrationList);
-router.post("/workshop-payment-list", auth, workshopPaymentList);
-router.post("/register-ca", auth, registerCa);
+router.post("/register-user", auth, registerUserValidation, Register);
+router.post("/register-ca", auth, registerCaValidation, registerCa);
 router.post(
-  "/workshop-payment-screenshot/:workshopPaymentId",
+  "/event-unregistered-list",
   auth,
-  upload.single("paymentScreenshot"),
-  workshopPaymentScreenshot
+  eventListValidation,
+  eventsUnregistered
 );
+router.post("/event-register", auth, registerEventValidation, registerEvent);
+router.post(
+  "/event-payment-list",
+  auth,
+  eventPaymentListValidation,
+  eventPaymentList
+);
+router.get("/pendingEventsPayments", auth, pendingEventsPayments);
+router.post("/event-unpaid", auth, eventUnpaidValidation, eventUnpaid);
+router.post(
+  "/event-cash-payment",
+  auth,
+  eventCashPaymentValidation,
+  eventCashPayment
+);
+router.post(
+  "/event-payment-success",
+  auth,
+  eventPaymentValidation,
+  eventPaymentSuccess
+);
+router.post(
+  "/event-payment-failure",
+  auth,
+  eventPaymentValidation,
+  eventPaymentFailure
+);
+router.post("/fetch-user", auth, fetchUserValidation, fetchUser);
+router.put("/update-user", auth, updateUserValidation, updateUser);
+router.get("/referral-code-details", auth, referralCodeDetails);
+router.get("/fetch-all-users", auth, fetchAllUsers);
+router.get("/send-olpc-link", auth, sendOlpcLink);
 
 export default router;
