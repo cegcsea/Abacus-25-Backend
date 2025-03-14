@@ -48,27 +48,38 @@ const registerSchema = joi.object({
   // hostCollege: joi.string().required().messages({
   //   "string.empty": "College is required",
   // }),
+  // password: joi
+  //   .string()
+  //   .required()
+  //   .min(8)
+  //   .regex(
+  //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%#*?&]{8,}$/
+  //   )
+  //   .messages({
+  //     "string.base": "Password must be a string.",
+  //     "string.empty": "Password is required.",
+  //     "string.min": "Password must be at least 8 characters long.",
+  //     "string.pattern.base":
+  //       "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+  //   }),
   password: joi
     .string()
     .required()
     .min(8)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%#*?&]{8,}$/
-    )
+    .regex(/^(?=.*\d)[A-Za-z\d@$!%#*?&]{8,}$/)
     .messages({
       "string.base": "Password must be a string.",
       "string.empty": "Password is required.",
       "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+      "string.pattern.base": "Password must contain at least one number.",
     }),
   accomodation: joi.boolean().required().messages({
     "boolean.empty": "Accomodation choice required",
   }),
-  
-    referralCode: joi.string().allow('').optional().messages({
-        'string.base': 'Referral Code must be a string'
-    })
+
+  referralCode: joi.string().allow("").optional().messages({
+    "string.base": "Referral Code must be a string",
+  }),
 });
 const loginSchema = joi.object({
   email: joi.string().email().required().messages({
@@ -91,33 +102,55 @@ const forgotPasswordSchema = joi.object({
   }),
 });
 const resetPasswordSchema = joi.object({
+  // newPassword: joi
+  //   .string()
+  //   .required()
+  //   .min(8)
+  //   .regex(
+  //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!%#*?&]{8,}$/
+  //   )
+  //   .messages({
+  //     "string.base": "Password must be a string.",
+  //     "string.empty": "Password is required.",
+  //     "string.min": "Password must be at least 8 characters long.",
+  //     "string.pattern.base":
+  //       "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+  //   }),
+  // confirmPassword: joi
+  //   .string()
+  //   .required()
+  //   .min(8)
+  //   .regex(
+  //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@$!#%*?&]{8,}$/
+  //   )
+  //   .messages({
+  //     "string.base": "Password must be a string.",
+  //     "string.empty": "Password is required.",
+  //     "string.min": "Password must be at least 8 characters long.",
+  //     "string.pattern.base":
+  //       "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+  //   }),
   newPassword: joi
     .string()
     .required()
     .min(8)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!%#*?&]{8,}$/
-    )
+    .regex(/^(?=.*\d)[A-Za-z\d@$!%#*?&]{8,}$/)
     .messages({
       "string.base": "Password must be a string.",
       "string.empty": "Password is required.",
       "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+      "string.pattern.base": "Password must contain at least one number.",
     }),
   confirmPassword: joi
     .string()
     .required()
     .min(8)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@$!#%*?&]{8,}$/
-    )
+    .regex(/^(?=.*\d)[A-Za-z\d@$!#%*?&]{8,}$/)
     .messages({
       "string.base": "Password must be a string.",
       "string.empty": "Password is required.",
       "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+      "string.pattern.base": "Password must contain at least one number.",
     }),
   userId: joi.string().required().messages({
     "string.empty": "Invalid Link",
@@ -131,29 +164,23 @@ const changePasswordSchema = joi.object({
     .string()
     .required()
     .min(8)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$#!%*?&])[A-Za-z\d@$#!%*?&]{8,}$/
-    )
+    .regex(/^(?=.*\d)[A-Za-z\d@$!%#*?&]{8,}$/)
     .messages({
       "string.base": "Password must be a string.",
       "string.empty": "Password is required.",
       "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+      "string.pattern.base": "Password must contain at least one number.",
     }),
   newPassword: joi
     .string()
     .required()
     .min(8)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@$#!%*?&]{8,}$/
-    )
+    .regex(/^(?=.*\d)[A-Za-z\d@$!#%*?&]{8,}$/)
     .messages({
       "string.base": "Password must be a string.",
       "string.empty": "Password is required.",
       "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
+      "string.pattern.base": "Password must contain at least one number.",
     }),
 });
 const eventRegisterSchema = joi.object({
