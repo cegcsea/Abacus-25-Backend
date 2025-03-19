@@ -189,14 +189,14 @@ const eventRegisterSchema = joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "number.base": "Event Id must be a number",
       "number.empty": "Event Id is required",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
 });
 const workshopRegisterSchema = joi.object({
