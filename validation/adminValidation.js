@@ -221,14 +221,14 @@ const registerEventSchema = Joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "any.required": "Event Id is required",
       "number.base": "Event Id must be a number",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
   userId: Joi.number().strict().precision(0).min(1).required().messages({
     "number.base": "User Id must be a number",
@@ -243,29 +243,29 @@ const eventListSchema = Joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "any.required": "Event Id is required",
       "number.base": "Event Id must be a number",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
 });
 const eventPaymentListSchema = Joi.object({
-    EventId: Joi.number()
+  EventId: Joi.number()
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "any.required": "Event Id is required",
       "number.base": "Event Id must be a number",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
 });
 const eventUnpaidSchema = Joi.object({
@@ -273,14 +273,14 @@ const eventUnpaidSchema = Joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "any.required": "Event Id is required",
       "number.base": "Event Id must be a number",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
 });
 const eventCashPaymentSchema = Joi.object({
@@ -293,14 +293,14 @@ const eventCashPaymentSchema = Joi.object({
     .strict()
     .precision(0)
     .min(1)
-    .max(20)
+    .max(21)
     .required()
     .messages({
       "any.required": "Event Id is required",
       "number.base": "Event Id must be a number",
       "number.precision": "Event Id must be a number",
-      "number.min": "Event Id should range between 1 and 20",
-      "number.max": "Event Id should range between 1 and 20",
+      "number.min": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21",
     }),
   day0: Joi.boolean().optional().messages({
     "boolean.empty": "Day 0 choice is required",
@@ -549,6 +549,7 @@ const updateUserValidation = (req, res, next) => {
   next();
 };
 const eventListValidation = (req, res, next) => {
+  console.log(eventListSchema.validate({ eventId: 21 })); // should be valid
   const { error } = eventListSchema.validate(req.body);
   if (error) {
     return res

@@ -196,7 +196,7 @@ const eventRegisterSchema = joi.object({
       "number.empty": "Event Id is required",
       "number.precision": "Event Id must be a number",
       "number.min": "Event Id should range between 1 and 21",
-      "number.max": "Event Id should range between 1 and 21",
+      "number.max": "Event Id should range between 1 and 21 ",
     }),
 });
 const workshopRegisterSchema = joi.object({
@@ -227,8 +227,8 @@ const workshopPaymentSchema = joi.object({
       "any.required": "Workshop Id is required",
       "number.base": "Workshop Id must be a number",
       "number.precision": "Workshop Id must be a number",
-      "number.min": "Workshop Id should range between 1 and 2",
-      "number.max": "Workshop Id should range between 1 and 2",
+      "number.min": "Workshop Id should range between 1 and 3",
+      "number.max": "Workshop Id should range between 1 and 3",
     }),
   paymentMobile: joi
     .string()
