@@ -23,10 +23,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+        "prisma:deploy": "node run-prisma.cjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "prisma:deploy": "node run-prisma.cjs"
+    "dev": "nodemon index.js"
+
   },
   "keywords": [],
   "author": "",
