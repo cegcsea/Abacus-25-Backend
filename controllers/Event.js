@@ -128,7 +128,7 @@ export const workshopRegister = async (req, res) => {
     //   fs.readFileSync(path.join("workshops.json"), "utf-8")
     // );
 
-    const subject = "Reach'25 Workshop Registration Successful";
+    const subject = "Reach'26 Workshop Registration Successful";
     const text = `Thank you for registering for ${
       workshopsData[req.body.workshopId.toString()]
     } workshop.`;
@@ -267,7 +267,7 @@ export const workshopPaymentScreenshot = async (req, res) => {
     const workshopsData = JSON.parse(
       fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
     );
-    const subject = "Reach'25 Workshop Registration Successful";
+    const subject = "Reach'26 Workshop Registration Successful";
     const text = `Thank you for registering for the ${
       workshopsData[workshopPayment.workshopId.toString()]
     } workshop. Your payment details will be verified by admin soon.`;

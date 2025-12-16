@@ -66,9 +66,9 @@ export const Register = async (req, res) => {
             email: req.params.email,
           },
         });
-        const subject = "Reach'25: Registration Successfull!";
+        const subject = "Reach'26: Registration Successfull!";
         const text =
-          "You have successfully completed Reach'25 registration.\n\n Your Reach ID is " +
+          "You have successfully completed Reach'26 registration.\n\n Your Reach ID is " +
           `${user.abacusId}` +
           "\n\n";
         // await sendEmailWithAttachment(subject, text, user, imageBuffer)
@@ -204,7 +204,7 @@ export const forgotPassword = async (req, res) => {
     await sendEmail(
       req.body.email,
       "Reset Password Link",
-      "Click the link below to reset password for your Reach'25 account\n" +
+      "Click the link below to reset password for your Reach'26 account\n" +
       link
     );
     return res.status(200).json({
@@ -480,8 +480,8 @@ export const getRegistrationLink = async (req, res) => {
     const link = `${process.env.BASE_URL}/register/${req.body.email}/${secretKey}`;
     await sendEmail(
       req.body.email,
-      "Reach'25: Registration Link",
-      `Click the link below to complete your registration for Reach'25\n\n${link}`
+      "Reach'26: Registration Link",
+      `Click the link below to complete your registration for Reach'26\n\n${link}`
     );
     console.log("mail sent");
     res.status(200).json({

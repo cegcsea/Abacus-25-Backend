@@ -75,7 +75,7 @@ export const addAdmin = async (req, res) => {
 
     const subject = "Admin added successfully";
     const text =
-      "You have been granted administrative access to Reach'25\\n\n Thank you\n\n";
+      "You have been granted administrative access to Reach'26\\n\n Thank you\n\n";
 
     await sendEmail(admin.email, subject, text);
 
@@ -235,7 +235,7 @@ export const workshopCashPayment = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Cash Payment done successfully";
+    const subject = "Reach'65 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[req.body.workshopId.toString()] +
@@ -282,7 +282,7 @@ export const workshopPaymentSuccess = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Payment done successfully";
+    const subject = "Reach'26 Workshop Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
@@ -322,7 +322,7 @@ export const workshopPaymentFailure = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Reach'25 Workshop Payment failed";
+    const subject = "Reach'26 Workshop Payment failed";
     const text =
       "Your payment for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
