@@ -18,7 +18,16 @@ const prisma = new PrismaClient();
 // Serve the images folder as a static directory
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-app.use(cors());
+
+const allowedOrigins = [
+  "https://reach-abacus-25-git-main-ceg-cseas-projects.vercel.app",
+  "http://localhost:3000" // for local testing
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(morgan("dev"));
