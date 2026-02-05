@@ -8,6 +8,8 @@ import AdminRouter from "./routes/AdminRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
+config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -52,9 +54,10 @@ const connection = async () => {
     console.log("Connected to the database.");
   } catch (error) {
     console.error("Error connecting to the database:", error);
-  } finally {
-    // Disconnect from the database
-    await prisma.$disconnect();
   }
+  // } finally {
+  //   // Disconnect from the database
+  //   await prisma.$disconnect();
+  // }
 };
 connection();

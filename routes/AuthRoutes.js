@@ -45,6 +45,10 @@ router.post(
   getRegistrationLinkValidation,
   getRegistrationLink
 );
+router.get("/register/:email/:token", (req, res) => {
+  const { email, token } = req.params;
+  res.redirect(`http://localhost:3000/user/register/${email}/${token}`);
+});
 router.post("/register/:email/:token", registerValidation, Register);
 router.post(
   "/get-password-reset-link",

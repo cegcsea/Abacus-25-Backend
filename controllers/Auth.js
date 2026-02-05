@@ -477,7 +477,7 @@ export const getRegistrationLink = async (req, res) => {
       });
     }
     console.log(secretKey);
-    const link = `${process.env.BASE_URL}/register/${req.body.email}/${secretKey}`;
+    const link = `${process.env.BASE_URL}/user/register/${req.body.email}/${secretKey}`;
     await sendEmail(
       req.body.email,
       "Reach'26: Registration Link",
