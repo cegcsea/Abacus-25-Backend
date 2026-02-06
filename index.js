@@ -7,6 +7,7 @@ import AuthRouter from "./routes/AuthRoutes.js";
 import AdminRouter from "./routes/AdminRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+config();
 
 console.log("APP ENTRY FILE LOADED");
 
@@ -26,7 +27,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 
 app.get("/", (req, res) => {
   res.send("Backend Running!");
