@@ -8,6 +8,9 @@ import AdminRouter from "./routes/AdminRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
+console.log("APP ENTRY FILE LOADED");
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -33,6 +36,7 @@ app.use("/user", AuthRouter);
 console.log("AuthRouter registered at /user");
 
 app.listen(port, () => {
+  console.log("Server running on port", port);
   console.log("Running on port:", port);
 });
 
