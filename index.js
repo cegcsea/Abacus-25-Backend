@@ -43,7 +43,7 @@ app.listen(port, () => {
 
 const connection = async () => {
   try {
-    // Attempt to connect to the database
+    //Attempt to connect to the database
     await prisma.$connect();
     console.log("Connected to the database.");
   } catch (error) {
