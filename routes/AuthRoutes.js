@@ -11,6 +11,7 @@ import {
   changePasswordValidation,
   updateProfileValidation,
   queryValidation,
+  bulkWorkshopRegisterValidation,
 } from "../validation/userValidation.js";
 
 import {
@@ -34,6 +35,7 @@ import {
   eventRegister,
   getEvents,
   workshopRegister,
+  bulkWorkshopRegister,
   getWorkshops,
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
@@ -68,7 +70,13 @@ router.post(
   "/workshop-register",
   auth,
   workshopRegisterValidation,
-  workshopRegister,
+  workshopRegister
+);
+router.post(
+  "/workshop-bulk-register",
+  auth, 
+  bulkWorkshopRegisterValidation,
+  bulkWorkshopRegister,
 );
 router.get("/get-workshops", auth, getWorkshops);
 router.post(

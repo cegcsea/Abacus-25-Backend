@@ -5,8 +5,9 @@ import { PrismaClient } from "@prisma/client";
 import sendEmail from "../utils/sendEmail.js";
 const prisma = new PrismaClient();
 
-export const Register = async (req, res) => {
+/*export const Register = async (req, res) => {
   try {
+          console.log("enbter");
     req.params.email = req.params.email.toLowerCase();
     const user = await prisma.user.findUnique({
       where: {
@@ -19,12 +20,13 @@ export const Register = async (req, res) => {
         error: "conflict",
         message: "User already registered",
       });
-    } else if (req.body.referralCode !== "") {
+    } /*else if (req.body.referralCode !== "") {
       const validReferralCode = await prisma.campusAmbassador.findUnique({
         where: {
           referralCode: req.body.referralCode,
         },
       });
+            console.log("invalid");
       if (!validReferralCode) {
         return res.status(409).json({
           status: "error",
@@ -33,16 +35,18 @@ export const Register = async (req, res) => {
         });
       }
     } else {
+            console.log("done");
       const token = await prisma.registrationToken.findUnique({
         where: {
           email: req.body.email,
           token: req.body.token,
         },
       });
+            console.log("after token");
       const expiration = new Date();
       expiration.setMinutes(expiration.getMinutes() - 10);
-      if (!token) {
-        return req.status(410).json({
+    /*  if (!token) {
+        return res.json({
           status: "error",
           error: "Not found",
           message: "Invalid link or link expired",
@@ -59,6 +63,7 @@ export const Register = async (req, res) => {
           message: "link expired",
         });
       } else {
+              console.log("entering");
         const salt = await bcrypt.genSalt(Number(process.env.SALT));
         const password = await bcrypt.hash(req.body.password, salt);
         const user = await prisma.user.create({
@@ -79,20 +84,14 @@ export const Register = async (req, res) => {
             email: req.params.email,
           },
         });
-        const subject = "Abacus'25: Registration Successfull!";
-        const text =
-          "You have successfully completed Abacus'25 registration.\n\n Your Abacus ID is " +
-          `${user.abacusId}` +
-          "\n\n";
         // await sendEmailWithAttachment(subject, text, user, imageBuffer)
-        await sendEmail(user.email, subject, text);
         const token = jwt.sign({ id: user.id }, process.env.JWTPRIVATEKEY);
         return res.status(200).json({
           status: "success",
           message: "User Registered Successfully!",
           token: token,
         });
-      }
+    //}
     }
   } catch (error) {
     console.error(error);
@@ -103,7 +102,73 @@ export const Register = async (req, res) => {
     });
   }
 };
+*/
+export const Register = async (req, res) => {
+  try {
+    const email = req.body.email.toLowerCase();
 
+    const user = await prisma.$transaction(async (tx) => {
+      // 1️⃣ Check if user exists
+      const existingUser = await tx.user.findUnique({ where: { email } });
+      if (existingUser) throw { status: 409, message: "User already registered" };
+
+      // 2️⃣ Validate registration token
+      const registrationToken = await tx.registrationToken.findUnique({
+        where: { email, token: req.body.token },
+      });
+      const expiration = new Date(Date.now() - 10 * 60 * 1000); // 10 mins ago
+      if (!registrationToken || registrationToken.createdAt < expiration) {
+        throw { status: 410, message: "Invalid or expired registration link" };
+      }
+
+      // 3️⃣ Hash password
+      const hashedPassword = await bcrypt.hash(req.body.password, Number(process.env.SALT));
+
+      // 4️⃣ Create user
+      const newUser = await tx.user.create({
+        data: {
+          name: req.body.name,
+          email,
+          mobile: req.body.mobile,
+          year: req.body.year,
+          dept: req.body.dept,
+          college: req.body.college,
+          password: hashedPassword,
+          referralCode: req.body.referralCode || null,
+          //accomodation: req.body.accomodation,
+        },
+      });
+
+      // 5️⃣ Delete registration token
+      await tx.registrationToken.delete({ where: { email } });
+
+      return newUser;
+    });
+
+    // 6️⃣ Generate JWT
+    const jwtToken = jwt.sign({ id: user.id }, process.env.JWTPRIVATEKEY);
+
+    // 7️⃣ Respond immediately
+    res.status(200).json({
+      status: "success",
+      message: "User Registered Successfully!",
+      token: jwtToken,
+    });
+
+    // 8️⃣ Send email async
+    const subject = "Abacus'26: Registration Successful!";
+    const text = `You have successfully completed Abacus'26 registration.\n\nYour Abacus ID is ${user.abacusId}`;
+    sendEmail(user.email, subject, text).catch(console.error);
+
+  } catch (error) {
+    console.error(error);
+    const status = error.status || 500;
+    res.status(status).json({
+      status: "error",
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
 export const Login = async (req, res) => {
   try {
     req.body.email = req.body.email.toLowerCase();
@@ -122,7 +187,7 @@ export const Login = async (req, res) => {
         dept: true,
         college: true,
         //hostCollege: true,
-        eventPayments: true,
+       eventPayments: true,
         WorkshopPayment: true,
         workshops: true,
         events: true,
@@ -149,6 +214,7 @@ export const Login = async (req, res) => {
       });
     }
     const token = jwt.sign({ id: user.id }, process.env.JWTPRIVATEKEY);
+    console.log(token);
 
     return res.status(200).json({
       status: "ok",
@@ -220,8 +286,8 @@ export const forgotPassword = async (req, res) => {
     await sendEmail(
       req.body.email,
       "Reset Password Link",
-      "Click the link below to reset password for your Abacus'25 account\n" +
-        link,
+      "Click the link below to reset password for your Abacus'26 account\n" +
+        link
     );
     return res.status(200).json({
       status: "OK",
@@ -513,8 +579,8 @@ export const getRegistrationLink = async (req, res) => {
     const link = `${process.env.BASE_URL}/register/${req.body.email}/${secretKey}`;
     await sendEmail(
       req.body.email,
-      "Abacus'25: Registration Link",
-      `Click the link below to complete your registration for Abacus'25\n\n${link}`,
+      "Abacus'26: Registration Link",
+      `Click the link below to complete your registration for Abacus'26\n\n${link}`
     );
     console.log("mail sent");
     res.status(200).json({

@@ -1359,6 +1359,72 @@ Kamalesh : +91 8610386055`,
   }
 };
 
+
+export const checkCAWorkshop = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    // 1️⃣ Fetch the user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referralCode: true },
+    });
+
+    if (!user?.referralCode) {
+      console.log("User has no referral code. Skipping CA workshop check.");
+      return res.json({ ok: true });
+    }
+
+    // 2️⃣ Fetch the CA using referral code
+    const ambassador = await prisma.campusAmbassador.findUnique({
+      where: { referralCode: user.referralCode },
+    });
+
+    if (!ambassador) {
+      console.log("No CA found for referral code:", user.referralCode);
+      return res.json({ ok: true });
+    }
+
+    // 3️⃣ Count distinct users who registered for any workshop using this CA's referral code
+    const distinctUsersCount = await prisma.user.count({
+      where: {
+        referralCode: user.referralCode,
+        workshops: { some: {} }, // only users who registered for at least 1 workshop
+      },
+    });
+
+    console.log(`Distinct workshop users count for CA ${ambassador.name}:`, distinctUsersCount);
+
+    // 4️⃣ Trigger email if exactly 5 users registered
+    if (distinctUsersCount === 5) {
+      console.log("Sending workshop email to CA:", ambassador.email);
+
+      await sendEmail(
+        ambassador.email,
+        "🎉 5 Users Registered for Workshops!",
+        `Hi ${ambassador.name},
+
+🎯 5 UNIQUE users have registered for workshops using your referral code!
+
+You are now eligible to register for **any one workshop for free**.
+
+Please contact us if you have any questions.
+
+For any queries:
+Kamalesh : +91 8610386055`
+      );
+
+      console.log("Workshop email sent successfully to CA:", ambassador.email);
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Error in checkCAWorkshop:", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+};
+
+
 export const updateUser = async (req, res) => {
   try {
     if (req.body.referralCode !== "") {
