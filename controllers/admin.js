@@ -144,7 +144,7 @@ export const addAdmin = async (req, res) => {
     console.log(admin);
     const subject = "Admin added successfully";
     const text =
-      "You have been granted administrative access to Abacus'25\\n\n Thank you\n\n";
+      "You have been granted administrative access to Abacus'26\\n\n Thank you\n\n";
 
     await sendEmail(admin.email, subject, text);
 
@@ -308,7 +308,7 @@ export const workshopCashPayment = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Abacus'25 Workshop Cash Payment done successfully";
+    const subject = "Abacus'26 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[req.body.workshopId.toString()] +
@@ -357,7 +357,7 @@ export const workshopPaymentSuccess = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Abacus'25 Workshop Payment done successfully";
+    const subject = "Abacus'26 Workshop Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
@@ -399,7 +399,7 @@ export const workshopPaymentFailure = async (req, res) => {
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
     // );
-    const subject = "Abacus'25 Workshop Payment failed";
+    const subject = "Abacus'26 Workshop Payment failed";
     const text =
       "Your payment for " +
       workshopsData[updateWorkshop.workshopId.toString()] +
@@ -633,7 +633,7 @@ export const Register = async (req, res) => {
       dept,
       college,
       password,
-      accomodation,
+//      accomodation,
       referralCode,
     } = req.body;
 
@@ -645,7 +645,7 @@ export const Register = async (req, res) => {
       !year ||
       !dept ||
       !college ||
-      !accomodation ||
+  //    !accomodation ||
       !password
     ) {
       return res.status(400).json({
@@ -687,7 +687,7 @@ export const Register = async (req, res) => {
         year: parseInt(year),
         dept,
         college,
-        accomodation,
+    //    accomodation,
         password: hashedPassword,
         referralCode: referralCode || null,
       },
@@ -767,7 +767,7 @@ export const eventsUnregistered = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
-        accomodation: true,
+      //  accomodation: true,
         referralCode: true,
       },
     });
@@ -904,18 +904,18 @@ export const eventCashPayment = async (req, res) => {
       } else {
         amount = amount * 250;
       }
-      await prisma.accomodation.create({
-        data: {
-          userId: connectedUsers[0].id,
-          day0: req.body.day0,
-          day1: req.body.day1,
-          day2: req.body.day2,
-          day3: req.body.day3,
-          food: req.body.food,
-          amount: amount,
-          paid: true,
-        },
-      });
+      // await prisma.accomodation.create({
+      //   data: {
+      //     userId: connectedUsers[0].id,
+      //     day0: req.body.day0,
+      //     day1: req.body.day1,
+      //     day2: req.body.day2,
+      //     day3: req.body.day3,
+      //     food: req.body.food,
+      //     amount: amount,
+      //     paid: true,
+      //   },
+      // });
     }
     const eventPaymentEntry = await prisma.eventPayment.create({
       data: {
@@ -939,7 +939,7 @@ export const eventCashPayment = async (req, res) => {
     let subject = "";
     let text = "";
     if (req.body.EventId === 20) {
-      subject = "Abacus'25 Accommodation Payment done successfully";
+      subject = "Abacus'26 Accommodation Payment done successfully";
       text =
         "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
         "<strong>Terms and Conditions</strong>" +
@@ -949,9 +949,9 @@ export const eventCashPayment = async (req, res) => {
         "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
         "<strong>Venue</strong>\n" +
         "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
-      ("\nWe look forward to welcoming you to Abacus'25!\n\n");
+      ("\nWe look forward to welcoming you to Abacus'26!\n\n");
     } else {
-      subject = "Abacus'25 Event Cash Payment done successfully";
+      subject = "Abacus'26 Event Cash Payment done successfully";
       text =
         "You have successfully registered for the " +
         eventsData[req.body.EventId.toString()] +
@@ -997,36 +997,36 @@ export const eventPaymentSuccess = async (req, res) => {
     );
     let subject = "";
     let text = "";
-    if (updateEvent.eventId === 20) {
-      const accomodation = await prisma.accomodation.update({
-        where: {
-          userId: updateEvent.users[0].id,
-        },
-        data: {
-          paid: true,
-        },
-      });
-      subject = "Abacus'25 Accommodation Payment done successfully";
-      text =
-        "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
-        "<strong>Terms and Conditions</strong>" +
-        "<ul><li>Refundable Rs.400 to be paid as caution deposit on the day of room allotment.</li><li>Accommodation will be provided in CEG Hostels.</li><li>Adhaar card Xerox and college ID Xerox need to be submitted during accommodation.</li><li>Refunds cannot be availed after payment confirmation. Only Caution deposit will be refunded.</li><li>Need to vacate on time or prior information should be given for overstay subject to availability.</li><li>Participants are solely responsible for their belongings.</li><li>Intime has to be followed strictly, Girls - 8.30 PM and Boys - 9.00 PM</li><li>Accommodation desk will be available only from 9 am to 5 pm.</li> <li>For any queries during other hours kindly contact,</li>" +
-        "<ol><li>Amritha - <a href='tel:9345563841'>+91 93455 63841</a></li><li>Harrin Viknesh - <a href='tel:8428292201'>+91 84282 92201</a></li><li>Yalini - <a href='tel:9790470161'>+91 97904 70161</a></li></ol> </ul>" +
-        "<strong>Mess Timings</strong>" +
-        "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
-        "<strong>Venue</strong>\n\n" +
-        "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
-      ("\nWe look forward to welcoming you to Abacus'25!\n\n");
-    } else {
-      const eventsData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
-      );
-      subject = "Abacus'25 Event Payment done successfully";
-      text =
-        "You have successfully registered for the " +
-        eventsData[updateEvent.eventId.toString()] +
-        " event\n\n Thank you\n\n";
-    }
+    // if (updateEvent.eventId === 20) {
+    //   const accomodation = await prisma.accomodation.update({
+    //     where: {
+    //       userId: updateEvent.users[0].id,
+    //     },
+    //     data: {
+    //       paid: true,
+    //     },
+    //   });
+    //   subject = "Abacus'26 Accommodation Payment done successfully";
+    //   text =
+    //     "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
+    //     "<strong>Terms and Conditions</strong>" +
+    //     "<ul><li>Refundable Rs.400 to be paid as caution deposit on the day of room allotment.</li><li>Accommodation will be provided in CEG Hostels.</li><li>Adhaar card Xerox and college ID Xerox need to be submitted during accommodation.</li><li>Refunds cannot be availed after payment confirmation. Only Caution deposit will be refunded.</li><li>Need to vacate on time or prior information should be given for overstay subject to availability.</li><li>Participants are solely responsible for their belongings.</li><li>Intime has to be followed strictly, Girls - 8.30 PM and Boys - 9.00 PM</li><li>Accommodation desk will be available only from 9 am to 5 pm.</li> <li>For any queries during other hours kindly contact,</li>" +
+    //     "<ol><li>Amritha - <a href='tel:9345563841'>+91 93455 63841</a></li><li>Harrin Viknesh - <a href='tel:8428292201'>+91 84282 92201</a></li><li>Yalini - <a href='tel:9790470161'>+91 97904 70161</a></li></ol> </ul>" +
+    //     "<strong>Mess Timings</strong>" +
+    //     "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
+    //     "<strong>Venue</strong>\n\n" +
+    //     "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
+    //   ("\nWe look forward to welcoming you to Abacus'26!\n\n");
+    // } else {
+    //   const eventsData = JSON.parse(
+    //     fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+    //   );
+    //   subject = "Abacus'26 Event Payment done successfully";
+    //   text =
+    //     "You have successfully registered for the " +
+    //     eventsData[updateEvent.eventId.toString()] +
+    //     " event\n\n Thank you\n\n";
+    // }
     for (let i = 0; i < updateEvent.users.length; i++) {
       const userEmail = updateEvent.users[i].email;
       await sendEmail(userEmail, subject, text);
@@ -1056,25 +1056,25 @@ export const eventPaymentFailure = async (req, res) => {
         users: true,
       },
     });
-    if (updateEvent.eventId === 20) {
-      const accomodation = await prisma.accomodation.delete({
-        where: {
-          userId: updateEvent.users[0].id,
-        },
-      });
-      subject = "Abacus'25 Accommodation Payment Failed";
-      text =
-        "Your payment for accommodation during Abacus'25 has failed.\n\n Thank you\n\n";
-    } else {
-      const eventsData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
-      );
-      subject = "Abacus'25 Event Payment failed";
-      text =
-        "Your payment for the " +
-        eventsData[updateEvent.eventId.toString()] +
-        " event is failed.\n\n Thank you\n\n";
-    }
+    // if (updateEvent.eventId === 20) {
+    //   const accomodation = await prisma.accomodation.delete({
+    //     where: {
+    //       userId: updateEvent.users[0].id,
+    //     },
+    //   });
+    //   subject = "Abacus'26 Accommodation Payment Failed";
+    //   text =
+    //     "Your payment for accommodation during Abacus'26 has failed.\n\n Thank you\n\n";
+    // } else {
+    //   const eventsData = JSON.parse(
+    //     fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+    //   );
+    //   subject = "Abacus'26 Event Payment failed";
+    //   text =
+    //     "Your payment for the " +
+    //     eventsData[updateEvent.eventId.toString()] +
+    //     " event is failed.\n\n Thank you\n\n";
+    // }
     for (let i = 0; i < updateEvent.users.length; i++) {
       const userEmail = updateEvent.users[i].email;
       await sendEmail(userEmail, subject, text);
@@ -1103,7 +1103,7 @@ export const fetchUser = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
-        accomodation: true,
+        //accomodation: true,
         referralCode: true,
       },
     });
@@ -1118,6 +1118,268 @@ export const fetchUser = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+export const getMyReferralCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "email missing" });
+    }
+
+    const ca = await prisma.campusAmbassador.findUnique({
+      where: { email },
+      select: { referralCode: true },
+    });
+
+    if (!ca) {
+      return res.status(200).json({ hasCode: false });
+    }
+
+    return res.status(200).json({
+      hasCode: true,
+      referralCode: ca.referralCode,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+export const getAmbassadorStats = async (req, res) => {
+  try {
+    const { referralCode } = req.body;
+
+    if (!referralCode) {
+      return res.status(400).json({ message: "referralCode required" });
+    }
+
+    const ambassador = await prisma.campusAmbassador.findUnique({
+      where: { referralCode },
+      select: {
+        name: true,
+        email: true,
+        college: true,
+        referralCode: true,
+        users: {
+          select: {
+            name: true,
+            email: true,
+            events: true,
+            WorkshopPayment: {
+              where: { status: "SUCCESS" },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ambassador) {
+      return res.status(404).json({ message: "Ambassador not found" });
+    }
+
+    let usersCount = 0;
+    let freeEvents = 0;
+    let workshops = 0;
+
+    const userDetails = ambassador.users.map((user) => {
+      usersCount += 1;
+      freeEvents += user.events.length;
+      workshops += user.WorkshopPayment.length;
+
+      return {
+        name: user.name,
+        email: user.email,
+        freeEvents: user.events.length,
+        workshops: user.WorkshopPayment.length,
+      };
+    });
+
+    return res.status(200).json({
+      ambassador: {
+        name: ambassador.name,
+        email: ambassador.email,
+        college: ambassador.college,
+        referralCode: ambassador.referralCode,
+      },
+      stats: {
+        users: usersCount,
+        freeEvents,
+        workshops,
+        totalActivity: freeEvents + workshops,
+      },
+      referredUsers: userDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};
+
+/*export const getAmbassadorStats = async (req, res) => {
+  try {
+    const { referralCode } = req.body;
+
+    if (!referralCode) {
+      return res.status(400).json({ message: "referralCode required" });
+    }
+
+    const ambassador = await prisma.campusAmbassador.findUnique({
+      where: { referralCode },
+      select: {
+        name: true,
+        email: true,
+        college: true,
+        referralCode: true,
+        users: {
+          select: {
+            events: true,
+            WorkshopPayment: {
+              where: { status: "SUCCESS" },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ambassador) {
+      return res.status(404).json({ message: "Ambassador not found" });
+    }
+
+    let users = 0;
+    let freeEvents = 0;
+    let workshops = 0;
+
+    for (const user of ambassador.users) {
+      users += 1;
+      freeEvents += user.events.length;
+      workshops += user.WorkshopPayment.length;
+    }
+
+    return res.status(200).json({
+      name: ambassador.name,
+      email: ambassador.email,
+      college: ambassador.college,
+      referralCode: ambassador.referralCode,
+      users,
+      freeEvents,
+      workshops,
+      totalActivity: freeEvents + workshops,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+};*/
+// export const checkCA20Events = async (req, res) => {
+//   try {
+//     const { userId } = req.body;
+
+//     const user = await prisma.user.findUnique({
+//       where: { id: userId },
+//       select: { referralCode: true },
+//     });
+
+//     if (!user?.referralCode) return res.json({ ok: true });
+
+//     const ambassador = await prisma.campusAmbassador.findUnique({
+//       where: { referralCode: user.referralCode },
+//     });
+
+//     if (!ambassador) return res.json({ ok: true });
+
+//     const totalEvents = await prisma.event.count({
+//       where: {
+//         user: {
+//           referralCode: user.referralCode,
+//         },
+//       },
+//     });
+
+//     if (totalEvents === 20) {
+//       await sendEmail(
+//         ambassador.email,
+//         "🎉 20 Event Registrations!",
+//         `
+// Hi ${ambassador.name},
+
+// Your referral network has crossed 20 event registrations 🎯
+
+// You are now eligible for a certificate which will be provided on the day of Abacus.
+
+// For any queries:
+// Kamalesh : +91 8610386055
+// `
+//       );
+//     }
+
+//     return res.json({ ok: true });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ ok: false });
+//   }
+// };
+
+
+export const checkCA20Events = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    // 1️⃣ Fetch the user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referralCode: true },
+    });
+
+    if (!user?.referralCode) {
+      console.log("User has no referral code. Skipping CA check.");
+      return res.json({ ok: true });
+    }
+
+    // 2️⃣ Fetch the CA (campus ambassador) using this referral code
+    const ambassador = await prisma.campusAmbassador.findUnique({
+      where: { referralCode: user.referralCode },
+    });
+
+    if (!ambassador) {
+      console.log("No CA found for referral code:", user.referralCode);
+      return res.json({ ok: true });
+    }
+
+    // 3️⃣ Count distinct users who registered with this referral code
+    const distinctUsersCount = await prisma.user.count({
+      where: {
+        referralCode: user.referralCode,
+        events: { some: {} }, // only count users who registered at least 1 event
+      },
+    });
+
+    console.log(`Distinct users count for CA ${ambassador.name}:`, distinctUsersCount);
+
+    // 4️⃣ Trigger email if exactly 2 users registered (or your target count)
+    if (distinctUsersCount === 2) {
+      console.log("Sending email to CA:", ambassador.email);
+
+      await sendEmail(
+        ambassador.email,
+        "🎉 25 Distinct Registrations!",
+        `Hi ${ambassador.name},
+
+🎯 25 UNIQUE users have registered using your referral code!
+
+You are now eligible for a certificate, which will be provided on the day of Abacus.
+
+For any queries:
+Kamalesh : +91 8610386055`
+      );
+
+      console.log("Email sent successfully to CA:", ambassador.email);
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Error in checkCA20Events:", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+};
+
+
+
 export const updateUser = async (req, res) => {
   try {
     if (req.body.referralCode !== "") {
@@ -1140,7 +1402,7 @@ export const updateUser = async (req, res) => {
         year: req.body.year,
         dept: req.body.dept,
         college: req.body.college,
-        accomodation: req.body.accomodation,
+        //accomodation: req.body.accomodation,
         referralCode:
           req.body.referralCode !== "" ? req.body.referralCode : null,
       },
@@ -1152,6 +1414,8 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+// routes/AdminRoutes.js
+
 export const referralCodeDetails = async (req, res) => {
   try {
     var result = [];
@@ -1231,7 +1495,7 @@ export const fetchAllUsers = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
-        accomodation: true,
+        //accomodation: true,
         referralCode: true,
       },
     });
@@ -1241,6 +1505,53 @@ export const fetchAllUsers = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: error.message, error });
+  }
+};
+export const registerCaFromUser = async (req, res) => {
+  try {
+    const { abacusId } = req.body; // frontend sends user abacusId
+
+    // 1️⃣ Fetch user from User table
+    const user = await prisma.user.findUnique({
+      where: { abacusId },
+      select: {
+        name: true,
+        email: true,
+        college: true,
+        referralCode: true, // optional if you want to check
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 2️⃣ Check if already registered as Campus Ambassador
+    const existingCA = await prisma.campusAmbassador.findUnique({
+      where: { email: user.email },
+    });
+    if (existingCA) {
+      return res.status(409).json({ message: "Already a Campus Ambassador" });
+    }
+
+    // 3️⃣ Generate referral code
+    const referralCode = await generateReferralCode();
+
+    const campusAmbassador = await prisma.campusAmbassador.create({
+      data: {
+        name: user.name,
+        email: user.email,
+        college: user.college,
+        referralCode,
+      },
+    });
+    return res.status(200).json({
+      message: "Campus Ambassador registered successfully",
+      campusAmbassador,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error });
   }
 };
 export const sendOlpcLink = async (req, res) => {
@@ -1255,9 +1566,9 @@ export const sendOlpcLink = async (req, res) => {
       },
     });
     for (let i = 0; i < users.length; i++) {
-      const subject = "Abacus'25 OLPC Registration Successfull";
+      const subject = "Abacus'26 OLPC Registration Successfull";
       const text =
-        "Thank you for registering for OLPC - Online Programming Contest - Abacus'25. We're excited to have you join the competition.\n\n Put your coding skills to the test and compete for amazing prizes!  Click the button below to access the contest.\n\n We wish you all the very best for the contest. Kindly ensure that you register for the contest on GeeksForGeeks with this same email.\n\n";
+        "Thank you for registering for OLPC - Online Programming Contest - Abacus'26. We're excited to have you join the competition.\n\n Put your coding skills to the test and compete for amazing prizes!  Click the button below to access the contest.\n\n We wish you all the very best for the contest. Kindly ensure that you register for the contest on GeeksForGeeks with this same email.\n\n";
       const link =
         "https://practice.geeksforgeeks.org/contest/online-programming-contest-abacus24-ceg-anna-university";
       await sendEmailWithLink(users[i].email, subject, text, link);

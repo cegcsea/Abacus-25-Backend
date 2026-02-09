@@ -1,17 +1,16 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.ADMIN_USER,
-        pass: process.env.ADMIN_PASS,
-    },
-    tls: {
-        rejectUnauthorized: false,
-    },
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
 });
 
 export default transporter;
