@@ -8,18 +8,17 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  abacusId     Int      @unique @default(autoincrement()) @map("abacusid")
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  abacusId     Int     @unique @default(autoincrement()) @map("abacusid")
   name         String
   mobile       String
   year         Int
   dept         String
   college      String
-  accomodation Boolean?
   password     String
   referralCode String?
-  isFree       Boolean  @default(false)
+  isFree       Boolean @default(false)
 
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @default(now()) @updatedAt
@@ -29,7 +28,6 @@ model User {
   WorkshopPayment  WorkshopPayment[]
   CampusAmbassador CampusAmbassador?    @relation(fields: [referralCode], references: [referralCode])
   eventPayments    EventPayment[]
-  accDetails       Accomodation?
 
   @@map("user")
 }
@@ -134,19 +132,4 @@ enum Status {
   PENDING
   SUCCESS
   FAILURE
-}
-
-model Accomodation {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  day0      Boolean
-  day1      Boolean
-  day2      Boolean
-  day3      Boolean
-  food      Boolean
-  amount    Int
-  paid      Boolean  @default(false)
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }

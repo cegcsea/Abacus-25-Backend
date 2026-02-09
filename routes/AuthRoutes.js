@@ -23,14 +23,12 @@ import {
   profile,
   updateProfile,
   postQuery,
-  accomodationDetails
 } from "../controllers/Auth.js";
 import {
   eventRegisterValidation,
   workshopRegisterValidation,
   workshopPaymentValidation,
   eventPaymentValidation,
-  accomodationDetailsValidation
 } from "../validation/userValidation.js";
 import {
   eventRegister,
@@ -40,7 +38,7 @@ import {
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
   verifyEventPaymentDetails,
-  eventPaymentScreenshot
+  eventPaymentScreenshot,
 } from "../controllers/Event.js";
 
 const router = express.Router();
@@ -48,18 +46,18 @@ const router = express.Router();
 router.post(
   "/get-registration-link",
   getRegistrationLinkValidation,
-  getRegistrationLink
+  getRegistrationLink,
 );
 router.post("/register/:email/:token", registerValidation, Register);
 router.post(
   "/get-password-reset-link",
   forgotPasswordValidation,
-  forgotPassword
+  forgotPassword,
 );
 router.post(
   "/reset-password/:userId/:token",
   resetPasswordValidation,
-  forgotPasswordReset
+  forgotPasswordReset,
 );
 router.post("/login", Login);
 router.put("/change-password", auth, changePasswordValidation, changePassword);
@@ -70,31 +68,34 @@ router.post(
   "/workshop-register",
   auth,
   workshopRegisterValidation,
-  workshopRegister
+  workshopRegister,
 );
 router.get("/get-workshops", auth, getWorkshops);
 router.post(
   "/verify-workshop-payment-details",
   auth,
   workshopPaymentValidation,
-  verifyWorkshopPaymentDetails
+  verifyWorkshopPaymentDetails,
 );
-router.post('/verify-event-payment-details', auth, eventPaymentValidation, verifyEventPaymentDetails)
+router.post(
+  "/verify-event-payment-details",
+  auth,
+  eventPaymentValidation,
+  verifyEventPaymentDetails,
+);
 router.post(
   "/workshop-payment-screenshot/:workshopPaymentId",
   auth,
   upload.single("paymentScreenshot"),
-  workshopPaymentScreenshot
+  workshopPaymentScreenshot,
 );
-router.post('/event-payment-screenshot/:eventPaymentId', auth, upload2.single('paymentScreenshot'), eventPaymentScreenshot)
+router.post(
+  "/event-payment-screenshot/:eventPaymentId",
+  auth,
+  upload2.single("paymentScreenshot"),
+  eventPaymentScreenshot,
+);
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
-router.post(
-  "/accomodation-details",
-  auth,
-  accomodationDetailsValidation,
-  accomodationDetails
-);
-
 
 export default router;

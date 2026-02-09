@@ -51,7 +51,7 @@ export const login = async (req, res) => {
 
     const validPassword = await bcrypt.compare(
       req.body.password,
-      admin.password
+      admin.password,
     );
     console.log("Received Password:", req.body.password);
     console.log("Stored Password Hash:", admin.password);
@@ -62,7 +62,7 @@ export const login = async (req, res) => {
     }
     const token = jwt.sign(
       { id: admin.id, role: "ADMIN" },
-      process.env.JWTPRIVATEKEY
+      process.env.JWTPRIVATEKEY,
     );
     console.log("Generated Token:", token); // Log the token
 
@@ -166,7 +166,7 @@ export const changePassword = async (req, res) => {
     //if password doesn't match
     const validPassword = await bcrypt.compare(
       req.body.password,
-      admin.password
+      admin.password,
     );
     if (!validPassword) {
       return res.status(401).json({ message: "Wrong Password. Try Again" });
@@ -222,7 +222,7 @@ export const pendingWorkshopsPayments = async (req, res) => {
       },
     });
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -303,7 +303,7 @@ export const workshopCashPayment = async (req, res) => {
     });
 
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -348,11 +348,11 @@ export const workshopPaymentSuccess = async (req, res) => {
         if (err) {
           console.error("Error deleting file:", err);
         }
-      }
+      },
     );
 
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -394,7 +394,7 @@ export const workshopPaymentFailure = async (req, res) => {
       },
     });
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -477,7 +477,7 @@ export const workshopRegistrationList = async (req, res) => {
       },
     });
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -552,7 +552,7 @@ export const workshopPaymentList = async (req, res) => {
       },
     });
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     //   fs.readFileSync("workshops.json", "utf-8")
@@ -633,7 +633,7 @@ export const Register = async (req, res) => {
       dept,
       college,
       password,
-//      accomodation,
+      //      accomodation,
       referralCode,
     } = req.body;
 
@@ -645,7 +645,7 @@ export const Register = async (req, res) => {
       !year ||
       !dept ||
       !college ||
-  //    !accomodation ||
+      //    !accomodation ||
       !password
     ) {
       return res.status(400).json({
@@ -687,7 +687,7 @@ export const Register = async (req, res) => {
         year: parseInt(year),
         dept,
         college,
-    //    accomodation,
+        //    accomodation,
         password: hashedPassword,
         referralCode: referralCode || null,
       },
@@ -697,7 +697,7 @@ export const Register = async (req, res) => {
     const token = jwt.sign(
       { id: newUser.id },
       process.env.JWTPRIVATEKEY, // Your JWT secret key
-      { expiresIn: "1d" } // Token valid for 1 day
+      { expiresIn: "1d" }, // Token valid for 1 day
     );
 
     // Send success response
@@ -767,7 +767,7 @@ export const eventsUnregistered = async (req, res) => {
         mobile: true,
         dept: true,
         year: true,
-      //  accomodation: true,
+        //  accomodation: true,
         referralCode: true,
       },
     });
@@ -814,26 +814,14 @@ export const pendingEventsPayments = async (req, res) => {
             name: true,
             email: true,
             mobile: true,
-            accDetails: {
-              select: {
-                amount: true,
-                day0: true,
-                day1: true,
-                day2: true,
-                day3: true,
-                food: true,
-              },
-            },
           },
         },
       },
     });
     const eventsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
     );
     const pendingPayments = payments.map((payment) => {
-      const days = payment.users[0].accDetails;
-      const count = days?.day0 + days?.day1 + days?.day2 + days?.day3;
       return {
         id: payment.id,
         users: payment.users,
@@ -842,15 +830,6 @@ export const pendingEventsPayments = async (req, res) => {
         transactionId: payment.transactionId,
         paymentMobile: payment.paymentMobile,
         screenshot: payment.screenshot,
-        amount:
-          payment.eventId === 20 ? payment.users[0].accDetails?.amount : null,
-        days: payment.eventId === 20 ? count : null,
-        food:
-          payment.eventId === 20
-            ? payment.users[0].accDetails?.food
-              ? "Yes"
-              : "No"
-            : null,
       };
     });
     return res.status(200).json({
@@ -934,7 +913,7 @@ export const eventCashPayment = async (req, res) => {
       },
     });
     const eventsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
     );
     let subject = "";
     let text = "";
@@ -993,7 +972,7 @@ export const eventPaymentSuccess = async (req, res) => {
         if (err) {
           console.error("Error deleting file:", err);
         }
-      }
+      },
     );
     let subject = "";
     let text = "";
@@ -1315,7 +1294,6 @@ export const getAmbassadorStats = async (req, res) => {
 //   }
 // };
 
-
 export const checkCA20Events = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -1349,7 +1327,10 @@ export const checkCA20Events = async (req, res) => {
       },
     });
 
-    console.log(`Distinct users count for CA ${ambassador.name}:`, distinctUsersCount);
+    console.log(
+      `Distinct users count for CA ${ambassador.name}:`,
+      distinctUsersCount,
+    );
 
     // 4️⃣ Trigger email if exactly 2 users registered (or your target count)
     if (distinctUsersCount === 25) {
@@ -1365,7 +1346,7 @@ export const checkCA20Events = async (req, res) => {
 You are now eligible for a certificate, which will be provided on the day of Abacus.
 
 For any queries:
-Kamalesh : +91 8610386055`
+Kamalesh : +91 8610386055`,
       );
 
       console.log("Email sent successfully to CA:", ambassador.email);
@@ -1377,8 +1358,6 @@ Kamalesh : +91 8610386055`
     return res.status(500).json({ ok: false, error: err.message });
   }
 };
-
-
 
 export const updateUser = async (req, res) => {
   try {
@@ -1610,7 +1589,7 @@ export const eventPaymentList = async (req, res) => {
       },
     });
     const eventsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
     );
     let paymentList = [];
     for (let i = 0; i < payments.length; i++) {

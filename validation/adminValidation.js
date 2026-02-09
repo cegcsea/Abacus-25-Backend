@@ -11,7 +11,7 @@ const loginSchema = Joi.object({
     .required()
     .min(8)
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!#%*?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!#%*?&]{8,}$/,
     )
     .messages({
       "string.base": "Password must be a string.",
@@ -33,7 +33,7 @@ const adminSchema = Joi.object({
     .required()
     .min(8)
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%#*?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%#*?&]{8,}$/,
     )
     .message({
       "string.empty": "Password is required.",
@@ -49,7 +49,7 @@ const changePasswordSchema = Joi.object({
     .required()
     .min(8)
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*#?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*#?&]{8,}$/,
     )
     .messages({
       "string.base": "Password must be a string.",
@@ -62,7 +62,7 @@ const changePasswordSchema = Joi.object({
     .required()
     .min(8)
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*#?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*#?&]{8,}$/,
     )
     .messages({
       "string.base": "Password must be a string.",
@@ -186,7 +186,7 @@ const registerUserSchema = Joi.object({
     .required()
     .min(8)
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%#*?&]{8,}$/
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%#*?&]{8,}$/,
     )
     .messages({
       "string.base": "Password must be a string.",
@@ -195,9 +195,6 @@ const registerUserSchema = Joi.object({
       "string.pattern.base":
         "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character (@,#,!,%,*,?,&,$).",
     }),
-  accomodation: Joi.boolean().required().messages({
-    "boolean.empty": "Accomodation choice is required",
-  }),
   referralCode: Joi.string().allow("").optional().messages({
     "string.base": "Referral Code must be a string",
   }),
@@ -380,9 +377,6 @@ const updateUserSchema = Joi.object({
   }),
   college: Joi.string().required().messages({
     "string.empty": "College is required",
-  }),
-  accomodation: Joi.boolean().required().messages({
-    "boolean.empty": "Accomodation choice is required",
   }),
   referralCode: Joi.string().allow("").optional().messages({
     "string.base": "Referral Code must be a string",

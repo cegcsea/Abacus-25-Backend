@@ -72,7 +72,6 @@ export const Register = async (req, res) => {
             college: req.body.college,
             password: password,
             referralCode: req.body?.referralCode || null,
-            accomodation: req.body.accomodation,
           },
         });
         await prisma.registrationToken.delete({
@@ -122,14 +121,12 @@ export const Login = async (req, res) => {
         year: true,
         dept: true,
         college: true,
-        accomodation: true,
         //hostCollege: true,
         eventPayments: true,
         WorkshopPayment: true,
         workshops: true,
         events: true,
         referralCode: true,
-        accDetails: true,
       },
     });
     console.log(user);
@@ -142,7 +139,7 @@ export const Login = async (req, res) => {
     }
     const validPassword = await bcrypt.compare(
       req.body.password,
-      user.password
+      user.password,
     );
     if (!validPassword) {
       return res.status(401).json({
@@ -224,7 +221,7 @@ export const forgotPassword = async (req, res) => {
       req.body.email,
       "Reset Password Link",
       "Click the link below to reset password for your Abacus'25 account\n" +
-        link
+        link,
     );
     return res.status(200).json({
       status: "OK",
@@ -364,7 +361,6 @@ export const updateProfile = async (req, res) => {
         year: req.body.year,
         dept: req.body.dept,
         college: req.body.college,
-        accomodation: req.body.accomodation || false,
       },
     });
     return res.status(200).json({
@@ -399,12 +395,10 @@ export const profile = async (req, res) => {
         college: true,
         //hostCollege: true,
         WorkshopPayment: true,
-        accomodation: true,
         eventPayments: true,
         workshops: true,
         events: true,
         referralCode: true,
-        accDetails: true,
       },
     });
     return res.status(200).json({
@@ -433,7 +427,7 @@ export const changePassword = async (req, res) => {
     // If password doesn't match
     const validPassword = await bcrypt.compare(
       req.body.password,
-      user.password
+      user.password,
     );
     if (!validPassword) {
       return res.status(401).json({
@@ -520,7 +514,7 @@ export const getRegistrationLink = async (req, res) => {
     await sendEmail(
       req.body.email,
       "Abacus'25: Registration Link",
-      `Click the link below to complete your registration for Abacus'25\n\n${link}`
+      `Click the link below to complete your registration for Abacus'25\n\n${link}`,
     );
     console.log("mail sent");
     res.status(200).json({
@@ -535,40 +529,5 @@ export const getRegistrationLink = async (req, res) => {
       error: `Something went wrong.\n${error.message}`,
       message: "Internal server error",
     });
-  }
-};
-export const accomodationDetails = async (req, res) => {
-  console.log(req.id, req.body);
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: req.id,
-      },
-    });
-    console.log(user);
-    if (!user) {
-      return res.status(409).json({ message: "Invalid User", data: {} });
-    }
-    const accomodationDetails = await prisma.accomodation.create({
-      data: {
-        userId: req.id,
-        day0: req.body.day0,
-        day1: req.body.day1,
-        day2: req.body.day2,
-        day3: req.body.day3,
-        food: req.body.food,
-        amount: req.body.amount,
-      },
-    });
-    console.log(accomodationDetails);
-    return res.status(200).json({
-      message: "Accommodation details inserted successfully",
-      data: { accomodationDetails },
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Accomodation registration failed!", error });
   }
 };

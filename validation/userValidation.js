@@ -73,9 +73,6 @@ const registerSchema = joi.object({
       "string.min": "Password must be at least 8 characters long.",
       "string.pattern.base": "Password must contain at least one number.",
     }),
-  accomodation: joi.boolean().required().messages({
-    "boolean.empty": "Accomodation choice required",
-  }),
 
   referralCode: joi.string().allow("").optional().messages({
     "string.base": "Referral Code must be a string",
@@ -307,9 +304,6 @@ const updateProfileSchema = joi.object({
   college: joi.string().required().messages({
     "string.empty": "College is required",
   }),
-  accomodation: joi.boolean().required().messages({
-    "boolean.empty": "Accomodation choice required",
-  }),
 });
 const querySchema = joi.object({
   name: joi.string().required().messages({
@@ -329,27 +323,6 @@ const querySchema = joi.object({
   }),
 });
 
-const accomodationDetailsSchema = joi.object({
-  day0: joi.boolean().required().messages({
-    "boolean.empty": "Day 0 choice is required",
-  }),
-  day1: joi.boolean().required().messages({
-    "boolean.empty": "Day 1 choice is required",
-  }),
-  day2: joi.boolean().required().messages({
-    "boolean.empty": "Day 2 choice is required",
-  }),
-  day3: joi.boolean().required().messages({
-    "boolean.empty": "Day 3 choice is required",
-  }),
-  food: joi.boolean().required().messages({
-    "boolean.empty": "Food choice is required",
-  }),
-  amount: joi.number().required().messages({
-    "number.base": "Year must be a number",
-    "number.empty": "Year is required",
-  }),
-});
 // Validation functions
 export const getRegistrationLinkValidation = (req, res, next) => {
   const { error } = getRegistrationLinkSchema.validate(req.body);
@@ -488,18 +461,6 @@ export const queryValidation = (req, res, next) => {
 export const eventPaymentValidation = (req, res, next) => {
   const { error } = eventPaymentSchema.validate(req.body);
   console.log(req.body);
-  if (error) {
-    res.status(400).json({
-      status: "error",
-      error: "Bad request",
-      message: error.details[0].message,
-    });
-    return;
-  }
-  next();
-};
-export const accomodationDetailsValidation = (req, res, next) => {
-  const { error } = accomodationDetailsSchema.validate(req.body);
   if (error) {
     res.status(400).json({
       status: "error",
