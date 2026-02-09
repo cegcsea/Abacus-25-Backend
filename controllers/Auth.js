@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail from "../utils/emailService.js";
 const prisma = new PrismaClient();
 
 /*export const Register = async (req, res) => {
@@ -110,7 +110,8 @@ export const Register = async (req, res) => {
     const user = await prisma.$transaction(async (tx) => {
       // 1️⃣ Check if user exists
       const existingUser = await tx.user.findUnique({ where: { email } });
-      if (existingUser) throw { status: 409, message: "User already registered" };
+      if (existingUser)
+        throw { status: 409, message: "User already registered" };
 
       // 2️⃣ Validate registration token
       const registrationToken = await tx.registrationToken.findUnique({
@@ -122,7 +123,10 @@ export const Register = async (req, res) => {
       }
 
       // 3️⃣ Hash password
-      const hashedPassword = await bcrypt.hash(req.body.password, Number(process.env.SALT));
+      const hashedPassword = await bcrypt.hash(
+        req.body.password,
+        Number(process.env.SALT),
+      );
 
       // 4️⃣ Create user
       const newUser = await tx.user.create({
@@ -159,7 +163,6 @@ export const Register = async (req, res) => {
     const subject = "Abacus'26: Registration Successful!";
     const text = `You have successfully completed Abacus'26 registration.\n\nYour Abacus ID is ${user.abacusId}`;
     sendEmail(user.email, subject, text).catch(console.error);
-
   } catch (error) {
     console.error(error);
     const status = error.status || 500;
@@ -187,7 +190,7 @@ export const Login = async (req, res) => {
         dept: true,
         college: true,
         //hostCollege: true,
-       eventPayments: true,
+        eventPayments: true,
         WorkshopPayment: true,
         workshops: true,
         events: true,
@@ -287,7 +290,7 @@ export const forgotPassword = async (req, res) => {
       req.body.email,
       "Reset Password Link",
       "Click the link below to reset password for your Abacus'26 account\n" +
-        link
+        link,
     );
     return res.status(200).json({
       status: "OK",
@@ -580,7 +583,7 @@ export const getRegistrationLink = async (req, res) => {
     await sendEmail(
       req.body.email,
       "Abacus'26: Registration Link",
-      `Click the link below to complete your registration for Abacus'26\n\n${link}`
+      `Click the link below to complete your registration for Abacus'26\n\n${link}`,
     );
     console.log("mail sent");
     res.status(200).json({

@@ -33,14 +33,18 @@ model User {
 }
 
 model CampusAmbassador {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  name         String
-  college      String
-  referralCode String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
-  users        User[]
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  name              String
+  college           String
+  referralCode      String   @unique
+  isEligible        Boolean  @default(false)
+  workshopsClaimed  Int      @default(0)
+  workshopReferrals Int      @default(0)
+  eventReferrals    Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+  users             User[]
 }
 
 model RegistrationToken {
@@ -132,4 +136,12 @@ enum Status {
   PENDING
   SUCCESS
   FAILURE
+}
+
+model EmailCounter {
+  id        Int      @id @default(autoincrement())
+  date      String   @unique // Format: YYYY-MM-DD
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

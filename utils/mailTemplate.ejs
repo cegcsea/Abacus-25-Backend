@@ -68,6 +68,13 @@
         </div>
         <h1>Hi there!</h1>
         <p> <%- text.replace(/\n/g, '<br>' ) %> </p>
+        <% if (typeof link !== 'undefined' && link) { %>
+        <div style="margin: 20px 0; text-align: center;">
+            <a href="<%- link %>" style="display: inline-block; padding: 12px 30px; background-color: #0066cc; color: #fff; border-radius: 5px; font-weight: bold; text-decoration: none;">
+                Access Now
+            </a>
+        </div>
+        <% } %>
         <div>
             <p>Regards,<br>Team Abacus.</p>
         </div>

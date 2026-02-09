@@ -51,6 +51,11 @@ import {
   referralCodeDetails,
   fetchAllUsers,
   sendOlpcLink,
+  getMyReferralCode,
+  getAmbassadorStats,
+  checkCA20Events,
+  checkCAWorkshop,
+  registerCaFromUser,
 } from "../controllers/admin.js";
 
 import {
@@ -73,44 +78,44 @@ router.post(
   "/workshop-cash-payment",
   auth,
   workshopCashPaymentValidation,
-  workshopCashPayment
+  workshopCashPayment,
 );
 router.post(
   "/workshop-payment-success",
   auth,
   workshopPaymentValidation,
-  workshopPaymentSuccess
+  workshopPaymentSuccess,
 );
 router.post(
   "/workshop-payment-failure",
   auth,
   workshopPaymentValidation,
-  workshopPaymentFailure
+  workshopPaymentFailure,
 );
 router.post(
   "/workshop-registration-list",
   auth,
   workshopListValidation,
-  workshopRegistrationList
+  workshopRegistrationList,
 );
 router.post(
   "/event-registration-list",
   auth,
   eventListValidation,
-  eventRegistrationList
+  eventRegistrationList,
 );
 router.post(
   "/workshop-payment-list",
   auth,
   workshopListValidation,
-  workshopPaymentList
+  workshopPaymentList,
 );
 router.get("/queries", auth, fetchQueries);
 router.post(
   "/set-query-replied",
   auth,
   setQueryRepliedValidation,
-  setQueryReplied
+  setQueryReplied,
 );
 router.post("/register-user", auth, registerUserValidation, Register);
 router.post("/register-ca", auth, registerCaValidation, registerCa);
@@ -118,14 +123,14 @@ router.post(
   "/event-unregistered-list",
   auth,
   eventListValidation,
-  eventsUnregistered
+  eventsUnregistered,
 );
 router.post("/event-register", auth, registerEventValidation, registerEvent);
 router.post(
   "/event-payment-list",
   auth,
   eventPaymentListValidation,
-  eventPaymentList
+  eventPaymentList,
 );
 router.get("/pendingEventsPayments", auth, pendingEventsPayments);
 router.post("/event-unpaid", auth, eventUnpaidValidation, eventUnpaid);
@@ -133,24 +138,31 @@ router.post(
   "/event-cash-payment",
   auth,
   eventCashPaymentValidation,
-  eventCashPayment
+  eventCashPayment,
 );
 router.post(
   "/event-payment-success",
   auth,
   eventPaymentValidation,
-  eventPaymentSuccess
+  eventPaymentSuccess,
 );
 router.post(
   "/event-payment-failure",
   auth,
   eventPaymentValidation,
-  eventPaymentFailure
+  eventPaymentFailure,
 );
 router.post("/fetch-user", auth, fetchUserValidation, fetchUser);
 router.put("/update-user", auth, updateUserValidation, updateUser);
 router.get("/referral-code-details", auth, referralCodeDetails);
 router.get("/fetch-all-users", auth, fetchAllUsers);
 router.get("/send-olpc-link", auth, sendOlpcLink);
+
+// Campus Ambassador monitoring routes
+router.post("/get-my-referral-code", auth, getMyReferralCode);
+router.post("/get-ambassador-stats", auth, getAmbassadorStats);
+router.post("/check-ca-events", auth, checkCA20Events);
+router.post("/check-ca-workshop", auth, checkCAWorkshop);
+router.post("/register-ca-from-user", auth, registerCaFromUser);
 
 export default router;

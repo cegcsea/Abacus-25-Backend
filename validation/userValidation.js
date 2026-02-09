@@ -211,6 +211,9 @@ const workshopRegisterSchema = joi.object({
       "number.min": "Workshop Id should range between 1 and 2",
       "number.max": "Workshop Id should range between 1 and 2",
     }),
+  claimFree: joi.boolean().optional().messages({
+    "boolean.base": "Claim Free must be a boolean",
+  }),
 });
 const workshopPaymentSchema = joi.object({
   workshopId: joi
@@ -324,7 +327,8 @@ const querySchema = joi.object({
 });
 
 export const bulkWorkshopRegisterSchema = joi.object({
-  workshopIds: joi.array()
+  workshopIds: joi
+    .array()
     .items(joi.number().integer().positive().required())
     .min(1)
     .required()

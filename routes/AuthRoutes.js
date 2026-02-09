@@ -11,7 +11,6 @@ import {
   changePasswordValidation,
   updateProfileValidation,
   queryValidation,
-  bulkWorkshopRegisterValidation,
 } from "../validation/userValidation.js";
 
 import {
@@ -25,6 +24,7 @@ import {
   updateProfile,
   postQuery,
 } from "../controllers/Auth.js";
+import { getAmbassadorStatus } from "../controllers/Ambassador.js";
 import {
   eventRegisterValidation,
   workshopRegisterValidation,
@@ -35,7 +35,6 @@ import {
   eventRegister,
   getEvents,
   workshopRegister,
-  bulkWorkshopRegister,
   getWorkshops,
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
@@ -70,15 +69,14 @@ router.post(
   "/workshop-register",
   auth,
   workshopRegisterValidation,
-  workshopRegister
+  workshopRegister,
 );
 router.post(
-  "/workshop-bulk-register",
-  auth, 
-  bulkWorkshopRegisterValidation,
-  bulkWorkshopRegister,
+  "/workshop-payment",
+  auth,
+  workshopPaymentValidation,
+  workshopPaymentScreenshot,
 );
-router.get("/get-workshops", auth, getWorkshops);
 router.post(
   "/verify-workshop-payment-details",
   auth,
@@ -105,5 +103,6 @@ router.post(
 );
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
+router.get("/ambassador-status", auth, getAmbassadorStatus);
 
 export default router;

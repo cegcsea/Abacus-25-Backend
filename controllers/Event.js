@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail from "../utils/emailService.js";
 import path from "path";
 const prisma = new PrismaClient();
 import { fileURLToPath } from "url";
@@ -66,7 +66,7 @@ export const getEvents = async (req, res) => {
       return;
     }
     const eventsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
     );
     // const eventsData = JSON.parse(fs.readFileSync("events.json", "utf-8"));
     const events = user.events.map((event) => ({
@@ -90,43 +90,100 @@ export const getEvents = async (req, res) => {
 
 export const workshopRegister = async (req, res) => {
   try {
+    const { claimFree } = req.body; // Frontend sends claimFree: true if ambassador wants to use their benefit
+
     const user = await prisma.user.findUnique({
       where: { id: req.id },
-      include: { workshops: true },
+      include: {
+        workshops: true,
+        CampusAmbassador: true,
+      },
     });
 
     if (!user) {
-      res.status(409).json({
+      return res.status(409).json({
         status: "error",
         error: "Conflict",
         message: "Invalid User",
       });
-      return;
     }
 
     if (
       user.workshops.some(
-        (workshop) => workshop.workshopId === req.body.workshopId
+        (workshop) => workshop.workshopId === req.body.workshopId,
       )
     ) {
-      res.status(409).json({
+      return res.status(409).json({
         status: "error",
         error: "Conflict",
         message: "User already registered for the workshop",
       });
-      return;
     }
 
+    // Check if user is trying to claim free workshop as ambassador
+    if (claimFree) {
+      // Find the ambassador by referral code
+      const ambassador = await prisma.campusAmbassador.findUnique({
+        where: { referralCode: user.referralCode },
+      });
+
+      if (!ambassador) {
+        return res.status(403).json({
+          status: "error",
+          error: "Forbidden",
+          message: "User is not a campus ambassador",
+        });
+      }
+
+      if (!ambassador.isEligible) {
+        return res.status(403).json({
+          status: "error",
+          error: "Forbidden",
+          message:
+            "Not eligible for free workshop. Need 5 workshop referrals or already claimed.",
+        });
+      }
+
+      // Register the workshop for free
+      await prisma.workshop.create({
+        data: { userId: req.id, workshopId: req.body.workshopId },
+      });
+
+      // Reset eligibility and increment workshops claimed
+      await prisma.campusAmbassador.update({
+        where: { id: ambassador.id },
+        data: {
+          isEligible: false,
+          workshopsClaimed: { increment: 1 },
+        },
+      });
+
+      const workshopsData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
+      );
+
+      const subject = "Abacus'25 Campus Ambassador - Free Workshop Claimed";
+      const text = `Congratulations! You have successfully claimed your free registration for ${
+        workshopsData[req.body.workshopId.toString()]
+      } workshop as a Campus Ambassador benefit.`;
+
+      sendEmail(user.email, subject, text);
+
+      return res.status(200).json({
+        status: "OK",
+        message: "Free workshop registration successful!",
+        data: { isFree: true },
+      });
+    }
+
+    // Regular registration (user must pay)
     const data = await prisma.workshop.create({
       data: { userId: req.id, workshopId: req.body.workshopId },
     });
 
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
-    // const workshopsData = JSON.parse(
-    //   fs.readFileSync(path.join("workshops.json"), "utf-8")
-    // );
 
     const subject = "Abacus'25 Workshop Registration Successful";
     const text = `Thank you for registering for ${
@@ -134,13 +191,13 @@ export const workshopRegister = async (req, res) => {
     } workshop.`;
     sendEmail(user.email, subject, text);
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "OK",
       message: "Workshop registration successful!",
       data: { data },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       status: "error",
       error: `Something went wrong.\n${error.message}`,
       message: "Internal server error",
@@ -208,7 +265,7 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
             in: ["SUCCESS", "PENDING"],
           },
         },
-      }))
+      })),
     );
     transactionId.push(
       ...(await prisma.eventPayment.findMany({
@@ -218,7 +275,7 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
             in: ["SUCCESS", "PENDING"],
           },
         },
-      }))
+      })),
     );
     if (transactionId.length > 0) {
       return res.status(409).json({ message: "Invalid Transaction Id" });
@@ -256,7 +313,7 @@ export const workshopPaymentScreenshot = async (req, res) => {
         path.join(__dirname, "../images/" + req.file.filename),
         (err) => {
           if (err) console.error("Error deleting file:", err);
-        }
+        },
       );
       return res.status(409).json({ message: "Invalid Payment Id" });
     }
@@ -267,7 +324,7 @@ export const workshopPaymentScreenshot = async (req, res) => {
     });
 
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     const subject = "Abacus'25 Workshop Registration Successful";
     const text = `Thank you for registering for the ${
@@ -345,7 +402,7 @@ export const verifyEventPaymentDetails = async (req, res) => {
             in: ["SUCCESS", "PENDING"],
           },
         },
-      }))
+      })),
     );
     transactionId.push(
       ...(await prisma.workshopPayment.findMany({
@@ -355,7 +412,7 @@ export const verifyEventPaymentDetails = async (req, res) => {
             in: ["SUCCESS", "PENDING"],
           },
         },
-      }))
+      })),
     );
     if (transactionId.length > 0) {
       return res.status(409).json({ message: "Invalid Transaction Id" });
@@ -394,7 +451,7 @@ export const eventPaymentScreenshot = async (req, res) => {
         path.join(__dirname, "../images/" + req.file.filename),
         (err) => {
           if (err) console.error("Error deleting file:", err);
-        }
+        },
       );
       return res.status(409).json({ message: "Invalid Payment Id" });
     }
@@ -415,7 +472,7 @@ export const eventPaymentScreenshot = async (req, res) => {
         "Thank you for registering for accommodation during Abacus'25. Your payment details will be verified by admin soon.";
     } else {
       const eventsData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
+        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
       );
       subject = "Abacus'25 Event Registration Successful";
       text =
@@ -454,7 +511,7 @@ export const getWorkshops = async (req, res) => {
       });
     }
     const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8")
+      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
     // const workshopsData = JSON.parse(
     // fs.readFileSync("workshops.json", "utf-8")

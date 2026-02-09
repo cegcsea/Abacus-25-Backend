@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
-import sendEmail from "../utils/sendEmail.js"; // Make sure to add the `.js` extension
+import sendEmail, { sendEmailWithLink } from "../utils/emailService.js";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 
@@ -305,17 +305,69 @@ export const workshopCashPayment = async (req, res) => {
     const workshopsData = JSON.parse(
       fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
-    // const workshopsData = JSON.parse(
-    //   fs.readFileSync("workshops.json", "utf-8")
-    // );
+
     const subject = "Abacus'26 Workshop Cash Payment done successfully";
     const text =
       "You have successfully registered for " +
       workshopsData[req.body.workshopId.toString()] +
       " workshop\n\n Thank you\n\n";
 
+    // Process each user
     for (let i = 0; i < workshopPaymentEntry.users.length; i++) {
-      const userEmail = workshopPaymentEntry.users[i].email;
+      const user = workshopPaymentEntry.users[i];
+      const userId = user.id;
+      const userEmail = user.email;
+      const userReferralCode = user.referralCode;
+
+      // Register workshop
+      await prisma.workshop.create({
+        data: {
+          userId: userId,
+          workshopId: req.body.workshopId,
+        },
+      });
+
+      // Track referral for campus ambassador if user used a referral code
+      if (userReferralCode) {
+        const ambassador = await prisma.campusAmbassador.findUnique({
+          where: { referralCode: userReferralCode },
+        });
+
+        if (ambassador) {
+          // Increment workshop referral count
+          const updatedAmbassador = await prisma.campusAmbassador.update({
+            where: { id: ambassador.id },
+            data: {
+              workshopReferrals: { increment: 1 },
+            },
+          });
+
+          // Check if ambassador just reached 5 workshop referrals
+          if (
+            updatedAmbassador.workshopReferrals === 5 &&
+            !updatedAmbassador.isEligible
+          ) {
+            // Set ambassador as eligible for free workshop
+            await prisma.campusAmbassador.update({
+              where: { id: ambassador.id },
+              data: { isEligible: true },
+            });
+
+            // Send notification email to ambassador
+            const ambassadorSubject =
+              "Abacus'25 Campus Ambassador - Free Workshop Unlocked!";
+            const ambassadorText = `Congratulations ${ambassador.name}! 🎉\n\nYou have successfully referred 5 users who registered for workshops. As a reward, you are now eligible to register for ONE workshop completely FREE!\n\nTo claim your free workshop:\n1. Go to the workshop registration page\n2. Select your preferred workshop\n3. Choose the "Claim Free Workshop" option\n\nNote: This benefit is valid for single workshop registration only, not for bulk registrations.\n\nThank you for being an amazing Campus Ambassador!\n\nTeam Abacus'25`;
+
+            await sendEmail(
+              ambassador.email,
+              ambassadorSubject,
+              ambassadorText,
+            );
+          }
+        }
+      }
+
+      // Send user email
       await sendEmail(userEmail, subject, text);
     }
 
@@ -339,7 +391,11 @@ export const workshopPaymentSuccess = async (req, res) => {
         verifiedBy: req.id,
       },
       include: {
-        users: true,
+        users: {
+          include: {
+            CampusAmbassador: true,
+          },
+        },
       },
     });
     fs.unlink(
@@ -354,17 +410,68 @@ export const workshopPaymentSuccess = async (req, res) => {
     const workshopsData = JSON.parse(
       fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
-    // const workshopsData = JSON.parse(
-    //   fs.readFileSync("workshops.json", "utf-8")
-    // );
-    const subject = "Abacus'26 Workshop Payment done successfully";
-    const text =
-      "You have successfully registered for " +
-      workshopsData[updateWorkshop.workshopId.toString()] +
-      " workshop\n\n Thank you\n\n";
 
+    // Process each user in the payment
     for (let i = 0; i < updateWorkshop.users.length; i++) {
-      const userEmail = updateWorkshop.users[i].email;
+      const user = updateWorkshop.users[i];
+      const userId = user.id;
+      const userEmail = user.email;
+      const userReferralCode = user.referralCode;
+
+      // Register the workshop
+      await prisma.workshop.create({
+        data: {
+          userId: userId,
+          workshopId: updateWorkshop.workshopId,
+        },
+      });
+
+      // Track referral for campus ambassador if user used a referral code
+      if (userReferralCode) {
+        const ambassador = await prisma.campusAmbassador.findUnique({
+          where: { referralCode: userReferralCode },
+        });
+
+        if (ambassador) {
+          // Increment workshop referral count
+          const updatedAmbassador = await prisma.campusAmbassador.update({
+            where: { id: ambassador.id },
+            data: {
+              workshopReferrals: { increment: 1 },
+            },
+          });
+
+          // Check if ambassador just reached 5 workshop referrals
+          if (
+            updatedAmbassador.workshopReferrals === 5 &&
+            !updatedAmbassador.isEligible
+          ) {
+            // Set ambassador as eligible for free workshop
+            await prisma.campusAmbassador.update({
+              where: { id: ambassador.id },
+              data: { isEligible: true },
+            });
+
+            // Send notification email to ambassador
+            const ambassadorSubject =
+              "Abacus'25 Campus Ambassador - Free Workshop Unlocked!";
+            const ambassadorText = `Congratulations ${ambassador.name}! 🎉\n\nYou have successfully referred 5 users who registered for workshops. As a reward, you are now eligible to register for ONE workshop completely FREE!\n\nTo claim your free workshop:\n1. Go to the workshop registration page\n2. Select your preferred workshop\n3. Choose the "Claim Free Workshop" option\n\nNote: This benefit is valid for single workshop registration only, not for bulk registrations.\n\nThank you for being an amazing Campus Ambassador!\n\nTeam Abacus'25`;
+
+            await sendEmail(
+              ambassador.email,
+              ambassadorSubject,
+              ambassadorText,
+            );
+          }
+        }
+      }
+
+      // Send confirmation email to user
+      const subject = "Abacus'26 Workshop Payment done successfully";
+      const text =
+        "You have successfully registered for " +
+        workshopsData[updateWorkshop.workshopId.toString()] +
+        " workshop\n\n Thank you\n\n";
       await sendEmail(userEmail, subject, text);
     }
 
@@ -909,7 +1016,13 @@ export const eventCashPayment = async (req, res) => {
         },
       },
       include: {
-        users: true,
+        users: {
+          select: {
+            id: true,
+            email: true,
+            referralCode: true,
+          },
+        },
       },
     });
     const eventsData = JSON.parse(
@@ -936,8 +1049,63 @@ export const eventCashPayment = async (req, res) => {
         eventsData[req.body.EventId.toString()] +
         " event\n\n Thank you\n\n";
     }
+    // Track event referrals and register events
     for (let i = 0; i < eventPaymentEntry.users.length; i++) {
-      const userEmail = eventPaymentEntry.users[i].email;
+      const user = eventPaymentEntry.users[i];
+      const userEmail = user.email;
+      const userReferralCode = user.referralCode;
+
+      // Register the event
+      await prisma.event.create({
+        data: {
+          userId: user.id,
+          eventId: req.body.EventId,
+        },
+      });
+
+      // Track referral for campus ambassador
+      if (userReferralCode) {
+        const ambassador = await prisma.campusAmbassador.findUnique({
+          where: { referralCode: userReferralCode },
+        });
+
+        if (ambassador) {
+          // Increment event referral count
+          const updatedAmbassador = await prisma.campusAmbassador.update({
+            where: { id: ambassador.id },
+            data: {
+              eventReferrals: { increment: 1 },
+            },
+          });
+
+          // Check if ambassador just reached 25 event referrals
+          if (updatedAmbassador.eventReferrals === 25) {
+            // Send certificate notification email to ambassador
+            const ambassadorSubject =
+              "🎉 25 Event Registrations - Certificate Earned!";
+            const ambassadorText = `Hi ${ambassador.name},
+
+🎯 25 users have registered for events using your referral code!
+
+You are now eligible for a Selection Certificate endorsed by CSEA, CEG – Anna University, which will be provided on the day of Abacus.
+
+Thank you for being an amazing Campus Ambassador!
+
+For any queries:
+Kamalesh: +91 8610386055
+
+Team Abacus'26`;
+
+            await sendEmail(
+              ambassador.email,
+              ambassadorSubject,
+              ambassadorText,
+            );
+          }
+        }
+      }
+
+      // Send confirmation email to user
       await sendEmail(userEmail, subject, text);
     }
 
@@ -962,7 +1130,13 @@ export const eventPaymentSuccess = async (req, res) => {
         verifiedBy: req.id,
       },
       include: {
-        users: true,
+        users: {
+          select: {
+            id: true,
+            email: true,
+            referralCode: true,
+          },
+        },
       },
     });
     console.log(updateEvent);
@@ -974,40 +1148,73 @@ export const eventPaymentSuccess = async (req, res) => {
         }
       },
     );
-    let subject = "";
-    let text = "";
-    // if (updateEvent.eventId === 20) {
-    //   const accomodation = await prisma.accomodation.update({
-    //     where: {
-    //       userId: updateEvent.users[0].id,
-    //     },
-    //     data: {
-    //       paid: true,
-    //     },
-    //   });
-    //   subject = "Abacus'26 Accommodation Payment done successfully";
-    //   text =
-    //     "Your payment has been verified successfully. Your hostel accommodation has been confirmed. This mail stands as a receipt of accommodation confirmation. You will receive the accommodation receipt hard copy, with the mess card (if you have opted for food) on day, once you reach our college campus. You will have to pay Rs. 400/- as caution deposit while receiving the hard copy of receipt, which will be refunded while you vacate the room.\n\n" +
-    //     "<strong>Terms and Conditions</strong>" +
-    //     "<ul><li>Refundable Rs.400 to be paid as caution deposit on the day of room allotment.</li><li>Accommodation will be provided in CEG Hostels.</li><li>Adhaar card Xerox and college ID Xerox need to be submitted during accommodation.</li><li>Refunds cannot be availed after payment confirmation. Only Caution deposit will be refunded.</li><li>Need to vacate on time or prior information should be given for overstay subject to availability.</li><li>Participants are solely responsible for their belongings.</li><li>Intime has to be followed strictly, Girls - 8.30 PM and Boys - 9.00 PM</li><li>Accommodation desk will be available only from 9 am to 5 pm.</li> <li>For any queries during other hours kindly contact,</li>" +
-    //     "<ol><li>Amritha - <a href='tel:9345563841'>+91 93455 63841</a></li><li>Harrin Viknesh - <a href='tel:8428292201'>+91 84282 92201</a></li><li>Yalini - <a href='tel:9790470161'>+91 97904 70161</a></li></ol> </ul>" +
-    //     "<strong>Mess Timings</strong>" +
-    //     "<ul><li>Breakfast - 7.00 to 9.00 AM</li><li>Lunch - 12.00 to 1.30 PM</li><li>Dinner - 7.00 to 8.30 PM</li></ul>" +
-    //     "<strong>Venue</strong>\n\n" +
-    //     "College of Engineering, Guindy,\n12, Sardar Patel Road,\nAnna University,\nChennai - 600025.\n\n";
-    //   ("\nWe look forward to welcoming you to Abacus'26!\n\n");
-    // } else {
-    //   const eventsData = JSON.parse(
-    //     fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8")
-    //   );
-    //   subject = "Abacus'26 Event Payment done successfully";
-    //   text =
-    //     "You have successfully registered for the " +
-    //     eventsData[updateEvent.eventId.toString()] +
-    //     " event\n\n Thank you\n\n";
-    // }
+
+    const eventsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
+    );
+    let subject = "Abacus'26 Event Payment done successfully";
+    let text =
+      "You have successfully registered for the " +
+      eventsData[updateEvent.eventId.toString()] +
+      " event\n\n Thank you\n\n";
+
+    // Track event referrals and register events
     for (let i = 0; i < updateEvent.users.length; i++) {
-      const userEmail = updateEvent.users[i].email;
+      const user = updateEvent.users[i];
+      const userEmail = user.email;
+      const userReferralCode = user.referralCode;
+
+      // Register the event
+      await prisma.event.create({
+        data: {
+          userId: user.id,
+          eventId: updateEvent.eventId,
+        },
+      });
+
+      // Track referral for campus ambassador
+      if (userReferralCode) {
+        const ambassador = await prisma.campusAmbassador.findUnique({
+          where: { referralCode: userReferralCode },
+        });
+
+        if (ambassador) {
+          // Increment event referral count
+          const updatedAmbassador = await prisma.campusAmbassador.update({
+            where: { id: ambassador.id },
+            data: {
+              eventReferrals: { increment: 1 },
+            },
+          });
+
+          // Check if ambassador just reached 25 event referrals
+          if (updatedAmbassador.eventReferrals === 25) {
+            // Send certificate notification email to ambassador
+            const ambassadorSubject =
+              "🎉 25 Event Registrations - Certificate Earned!";
+            const ambassadorText = `Hi ${ambassador.name},
+
+🎯 25 users have registered for events using your referral code!
+
+You are now eligible for a Selection Certificate endorsed by CSEA, CEG – Anna University, which will be provided on the day of Abacus.
+
+Thank you for being an amazing Campus Ambassador!
+
+For any queries:
+Kamalesh: +91 8610386055
+
+Team Abacus'26`;
+
+            await sendEmail(
+              ambassador.email,
+              ambassadorSubject,
+              ambassadorText,
+            );
+          }
+        }
+      }
+
+      // Send confirmation email to user
       await sendEmail(userEmail, subject, text);
     }
     return res.status(200).json({
@@ -1097,6 +1304,7 @@ export const fetchUser = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+
 export const getMyReferralCode = async (req, res) => {
   try {
     const { email } = req.body;
@@ -1122,6 +1330,7 @@ export const getMyReferralCode = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+
 export const getAmbassadorStats = async (req, res) => {
   try {
     const { referralCode } = req.body;
@@ -1137,6 +1346,10 @@ export const getAmbassadorStats = async (req, res) => {
         email: true,
         college: true,
         referralCode: true,
+        isEligible: true,
+        workshopsClaimed: true,
+        workshopReferrals: true,
+        eventReferrals: true,
         users: {
           select: {
             name: true,
@@ -1177,6 +1390,10 @@ export const getAmbassadorStats = async (req, res) => {
         email: ambassador.email,
         college: ambassador.college,
         referralCode: ambassador.referralCode,
+        isEligible: ambassador.isEligible,
+        workshopsClaimed: ambassador.workshopsClaimed,
+        workshopReferrals: ambassador.workshopReferrals,
+        eventReferrals: ambassador.eventReferrals,
       },
       stats: {
         users: usersCount,
@@ -1191,114 +1408,10 @@ export const getAmbassadorStats = async (req, res) => {
   }
 };
 
-/*export const getAmbassadorStats = async (req, res) => {
-  try {
-    const { referralCode } = req.body;
-
-    if (!referralCode) {
-      return res.status(400).json({ message: "referralCode required" });
-    }
-
-    const ambassador = await prisma.campusAmbassador.findUnique({
-      where: { referralCode },
-      select: {
-        name: true,
-        email: true,
-        college: true,
-        referralCode: true,
-        users: {
-          select: {
-            events: true,
-            WorkshopPayment: {
-              where: { status: "SUCCESS" },
-            },
-          },
-        },
-      },
-    });
-
-    if (!ambassador) {
-      return res.status(404).json({ message: "Ambassador not found" });
-    }
-
-    let users = 0;
-    let freeEvents = 0;
-    let workshops = 0;
-
-    for (const user of ambassador.users) {
-      users += 1;
-      freeEvents += user.events.length;
-      workshops += user.WorkshopPayment.length;
-    }
-
-    return res.status(200).json({
-      name: ambassador.name,
-      email: ambassador.email,
-      college: ambassador.college,
-      referralCode: ambassador.referralCode,
-      users,
-      freeEvents,
-      workshops,
-      totalActivity: freeEvents + workshops,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message, error });
-  }
-};*/
-// export const checkCA20Events = async (req, res) => {
-//   try {
-//     const { userId } = req.body;
-
-//     const user = await prisma.user.findUnique({
-//       where: { id: userId },
-//       select: { referralCode: true },
-//     });
-
-//     if (!user?.referralCode) return res.json({ ok: true });
-
-//     const ambassador = await prisma.campusAmbassador.findUnique({
-//       where: { referralCode: user.referralCode },
-//     });
-
-//     if (!ambassador) return res.json({ ok: true });
-
-//     const totalEvents = await prisma.event.count({
-//       where: {
-//         user: {
-//           referralCode: user.referralCode,
-//         },
-//       },
-//     });
-
-//     if (totalEvents === 20) {
-//       await sendEmail(
-//         ambassador.email,
-//         "🎉 20 Event Registrations!",
-//         `
-// Hi ${ambassador.name},
-
-// Your referral network has crossed 20 event registrations 🎯
-
-// You are now eligible for a certificate which will be provided on the day of Abacus.
-
-// For any queries:
-// Kamalesh : +91 8610386055
-// `
-//       );
-//     }
-
-//     return res.json({ ok: true });
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({ ok: false });
-//   }
-// };
-
 export const checkCA20Events = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    // 1️⃣ Fetch the user
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { referralCode: true },
@@ -1309,7 +1422,6 @@ export const checkCA20Events = async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // 2️⃣ Fetch the CA (campus ambassador) using this referral code
     const ambassador = await prisma.campusAmbassador.findUnique({
       where: { referralCode: user.referralCode },
     });
@@ -1319,11 +1431,10 @@ export const checkCA20Events = async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // 3️⃣ Count distinct users who registered with this referral code
     const distinctUsersCount = await prisma.user.count({
       where: {
         referralCode: user.referralCode,
-        events: { some: {} }, // only count users who registered at least 1 event
+        events: { some: {} },
       },
     });
 
@@ -1332,7 +1443,6 @@ export const checkCA20Events = async (req, res) => {
       distinctUsersCount,
     );
 
-    // 4️⃣ Trigger email if exactly 2 users registered (or your target count)
     if (distinctUsersCount === 25) {
       console.log("Sending email to CA:", ambassador.email);
 
@@ -1359,12 +1469,10 @@ Kamalesh : +91 8610386055`,
   }
 };
 
-
 export const checkCAWorkshop = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    // 1️⃣ Fetch the user
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { referralCode: true },
@@ -1375,7 +1483,6 @@ export const checkCAWorkshop = async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // 2️⃣ Fetch the CA using referral code
     const ambassador = await prisma.campusAmbassador.findUnique({
       where: { referralCode: user.referralCode },
     });
@@ -1385,17 +1492,18 @@ export const checkCAWorkshop = async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // 3️⃣ Count distinct users who registered for any workshop using this CA's referral code
     const distinctUsersCount = await prisma.user.count({
       where: {
         referralCode: user.referralCode,
-        workshops: { some: {} }, // only users who registered for at least 1 workshop
+        workshops: { some: {} },
       },
     });
 
-    console.log(`Distinct workshop users count for CA ${ambassador.name}:`, distinctUsersCount);
+    console.log(
+      `Distinct workshop users count for CA ${ambassador.name}:`,
+      distinctUsersCount,
+    );
 
-    // 4️⃣ Trigger email if exactly 5 users registered
     if (distinctUsersCount === 5) {
       console.log("Sending workshop email to CA:", ambassador.email);
 
@@ -1411,7 +1519,7 @@ You are now eligible to register for **any one workshop for free**.
 Please contact us if you have any questions.
 
 For any queries:
-Kamalesh : +91 8610386055`
+Kamalesh : +91 8610386055`,
       );
 
       console.log("Workshop email sent successfully to CA:", ambassador.email);
@@ -1423,7 +1531,6 @@ Kamalesh : +91 8610386055`
     return res.status(500).json({ ok: false, error: err.message });
   }
 };
-
 
 export const updateUser = async (req, res) => {
   try {
@@ -1447,7 +1554,6 @@ export const updateUser = async (req, res) => {
         year: req.body.year,
         dept: req.body.dept,
         college: req.body.college,
-        //accomodation: req.body.accomodation,
         referralCode:
           req.body.referralCode !== "" ? req.body.referralCode : null,
       },
@@ -1459,7 +1565,6 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
-// routes/AdminRoutes.js
 
 export const referralCodeDetails = async (req, res) => {
   try {
@@ -1552,18 +1657,18 @@ export const fetchAllUsers = async (req, res) => {
     return res.status(500).json({ message: error.message, error });
   }
 };
+
 export const registerCaFromUser = async (req, res) => {
   try {
-    const { abacusId } = req.body; // frontend sends user abacusId
+    const { abacusId } = req.body;
 
-    // 1️⃣ Fetch user from User table
     const user = await prisma.user.findUnique({
       where: { abacusId },
       select: {
         name: true,
         email: true,
         college: true,
-        referralCode: true, // optional if you want to check
+        referralCode: true,
       },
     });
 
@@ -1571,7 +1676,6 @@ export const registerCaFromUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 2️⃣ Check if already registered as Campus Ambassador
     const existingCA = await prisma.campusAmbassador.findUnique({
       where: { email: user.email },
     });
@@ -1579,7 +1683,6 @@ export const registerCaFromUser = async (req, res) => {
       return res.status(409).json({ message: "Already a Campus Ambassador" });
     }
 
-    // 3️⃣ Generate referral code
     const referralCode = await generateReferralCode();
 
     const campusAmbassador = await prisma.campusAmbassador.create({
@@ -1599,6 +1702,7 @@ export const registerCaFromUser = async (req, res) => {
     return res.status(500).json({ message: "Server error", error });
   }
 };
+
 export const sendOlpcLink = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
