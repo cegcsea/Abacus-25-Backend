@@ -1352,7 +1352,7 @@ export const checkCA20Events = async (req, res) => {
     console.log(`Distinct users count for CA ${ambassador.name}:`, distinctUsersCount);
 
     // 4️⃣ Trigger email if exactly 2 users registered (or your target count)
-    if (distinctUsersCount === 2) {
+    if (distinctUsersCount === 25) {
       console.log("Sending email to CA:", ambassador.email);
 
       await sendEmail(
