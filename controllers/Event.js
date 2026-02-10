@@ -7,6 +7,32 @@ const prisma = new PrismaClient();
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const safeUnlink = (filePath) => {
+  if (!filePath) {
+    return;
+  }
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error("Error deleting file:", err);
+    }
+  });
+};
+
+const parseJsonArray = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+};
 export const eventRegister = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -131,7 +157,7 @@ export const workshopRegister = async (req, res) => {
         return res.status(403).json({
           status: "error",
           error: "Forbidden",
-          message: "User is not a campus ambassador",
+          message: "User is not a student ambassador",
         });
       }
 
@@ -141,6 +167,15 @@ export const workshopRegister = async (req, res) => {
           error: "Forbidden",
           message:
             "Not eligible for free workshop. Need 5 workshop referrals or already claimed.",
+        });
+      }
+
+      // Double-check: Ensure they haven't already claimed a free workshop
+      if (ambassador.workshopsClaimed > 0) {
+        return res.status(403).json({
+          status: "error",
+          error: "Forbidden",
+          message: "You have already claimed your free workshop benefit.",
         });
       }
 
@@ -162,10 +197,10 @@ export const workshopRegister = async (req, res) => {
         fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
       );
 
-      const subject = "Abacus'25 Campus Ambassador - Free Workshop Claimed";
+      const subject = "Abacus'26 Student Ambassador - Free Workshop Claimed";
       const text = `Congratulations! You have successfully claimed your free registration for ${
         workshopsData[req.body.workshopId.toString()]
-      } workshop as a Campus Ambassador benefit.`;
+      } workshop as a Student Ambassador benefit.`;
 
       sendEmail(user.email, subject, text);
 
@@ -185,7 +220,7 @@ export const workshopRegister = async (req, res) => {
       fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
     );
 
-    const subject = "Abacus'25 Workshop Registration Successful";
+    const subject = "Abacus'26 Workshop Registration Successful";
     const text = `Thank you for registering for ${
       workshopsData[req.body.workshopId.toString()]
     } workshop.`;
@@ -205,6 +240,150 @@ export const workshopRegister = async (req, res) => {
   }
 };
 
+export const bulkWorkshopPaymentVerify = async (req, res) => {
+  try {
+    // Parse FormData fields - workshopId and userIds are JSON stringified arrays
+    let workshopIds, userIds;
+
+    try {
+      workshopIds = JSON.parse(req.body.workshopId);
+      userIds = JSON.parse(req.body.userIds);
+    } catch (parseError) {
+      return res.status(400).json({
+        status: "error",
+        message:
+          "Invalid data format - workshopId and userIds must be valid JSON arrays",
+      });
+    }
+
+    const { transactionId, paymentMobile } = req.body;
+
+    // Validate exactly 2 workshops
+    if (!workshopIds || workshopIds.length !== 2) {
+      return res.status(400).json({
+        status: "error",
+        message: "Bulk payment requires exactly 2 workshop IDs",
+      });
+    }
+
+    // Validate workshops are 1 and 2
+    const sortedIds = [...workshopIds].sort();
+    if (sortedIds[0] !== 1 || sortedIds[1] !== 2) {
+      return res.status(400).json({
+        status: "error",
+        message: "Bulk payment is only available for workshops 1 and 2",
+      });
+    }
+
+    // Validate users exist
+    const validUsers = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true },
+    });
+
+    if (validUsers.length !== userIds.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "All provided user IDs must be valid!",
+      });
+    }
+
+    // Check if any user already has bulk payment pending/success
+    const existingBulkPayments = await prisma.workshopPayment.findMany({
+      where: {
+        workshopId: 0, // 0 indicates bulk payment
+        users: {
+          some: {
+            id: { in: userIds },
+          },
+        },
+        status: { in: ["SUCCESS", "PENDING"] },
+      },
+    });
+
+    if (existingBulkPayments.length > 0) {
+      return res.status(409).json({
+        status: "error",
+        message:
+          "You already have a bulk workshop payment pending or completed",
+      });
+    }
+
+    // Check for existing individual workshop registrations
+    const existingWorkshops = await prisma.workshop.findMany({
+      where: {
+        userId: { in: userIds },
+        workshopId: { in: [1, 2] },
+      },
+    });
+
+    if (existingWorkshops.length > 0) {
+      return res.status(409).json({
+        status: "error",
+        message:
+          "You are already registered for one or both workshops individually. Bulk registration is not available.",
+      });
+    }
+
+    // Check if transaction ID already exists
+    const existingTransaction = await prisma.workshopPayment.findFirst({
+      where: {
+        transactionId,
+        status: { in: ["SUCCESS", "PENDING"] },
+      },
+    });
+
+    const existingEventTransaction = await prisma.eventPayment.findFirst({
+      where: {
+        transactionId,
+        status: { in: ["SUCCESS", "PENDING"] },
+      },
+    });
+
+    if (existingTransaction || existingEventTransaction) {
+      return res.status(409).json({
+        status: "error",
+        message: "Invalid Transaction ID - already in use",
+      });
+    }
+
+    // Create bulk payment record (workshopId: 0 indicates both workshops)
+    const connectedUsers = userIds.map((userId) => ({ id: userId }));
+
+    const bulkPayment = await prisma.workshopPayment.create({
+      data: {
+        workshopId: 0, // Special ID for bulk payment (₹500 for both workshops)
+        transactionId,
+        paymentMobile,
+        status: "PENDING",
+        users: {
+          connect: connectedUsers,
+        },
+      },
+    });
+
+    // Return response in format expected by frontend
+    return res.status(200).json({
+      message:
+        "Bulk payment details submitted successfully. Please upload payment screenshot.",
+      payment: {
+        id: bulkPayment.id,
+        workshopId: 0,
+        transactionId: bulkPayment.transactionId,
+        totalAmount: 500,
+      },
+    });
+  } catch (error) {
+    console.error("Bulk payment verification error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+      error: "Internal server error",
+    });
+  }
+};
+
+// Legacy controller for JSON-based requests (kept for backward compatibility)
 export const verifyWorkshopPaymentDetails = async (req, res) => {
   try {
     const validUsers = await prisma.user.findMany({
@@ -302,7 +481,6 @@ export const verifyWorkshopPaymentDetails = async (req, res) => {
 };
 
 export const workshopPaymentScreenshot = async (req, res) => {
-  console.log("workshopPayment screenshot", req.body);
   try {
     const workshopPayment = await prisma.workshopPayment.findUnique({
       where: { id: parseInt(req.params.workshopPaymentId) },
@@ -323,15 +501,22 @@ export const workshopPaymentScreenshot = async (req, res) => {
       where: { id: parseInt(req.params.workshopPaymentId) },
     });
 
-    const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
-    );
-    const subject = "Abacus'25 Workshop Registration Successful";
-    const text = `Thank you for registering for the ${
-      workshopsData[workshopPayment.workshopId.toString()]
-    } workshop. Your payment details will be verified by admin soon.`;
-
     const user = await prisma.user.findUnique({ where: { id: req.id } });
+    const subject = "Abacus'26 Workshop Registration Successful";
+
+    // Check if this is a bulk payment (workshopId: 0)
+    let text;
+    if (workshopPayment.workshopId === 0) {
+      text = `Thank you for registering for BOTH workshops (Bulk Registration)! You've saved ₹100 by choosing the bulk package. Your payment details will be verified by admin soon. Total Amount: ₹500`;
+    } else {
+      const workshopsData = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
+      );
+      text = `Thank you for registering for the ${
+        workshopsData[workshopPayment.workshopId.toString()]
+      } workshop. Your payment details will be verified by admin soon.`;
+    }
+
     sendEmail(user.email, subject, text);
 
     return res
@@ -465,21 +650,14 @@ export const eventPaymentScreenshot = async (req, res) => {
       },
     });
 
-    let subject, text;
-    if (eventPayment.eventId === 20) {
-      subject = "Abacus'25 Accommodation Registration Successful";
-      text =
-        "Thank you for registering for accommodation during Abacus'25. Your payment details will be verified by admin soon.";
-    } else {
-      const eventsData = JSON.parse(
-        fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
-      );
-      subject = "Abacus'25 Event Registration Successful";
-      text =
-        "Thank you for registering for the " +
-        eventsData[eventPayment.eventId.toString()] +
-        " event. Your payment details will be verified by admin soon.";
-    }
+    const eventsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "events.json"), "utf-8"),
+    );
+    const subject = "Abacus'26 Event Registration Successful";
+    const text =
+      "Thank you for registering for the " +
+      eventsData[eventPayment.eventId.toString()] +
+      " event. Your payment details will be verified by admin soon.";
 
     const user = await prisma.user.findUnique({
       where: { id: req.id },
@@ -491,51 +669,5 @@ export const eventPaymentScreenshot = async (req, res) => {
       .json({ message: "Screenshot uploaded successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message, error });
-  }
-};
-export const getWorkshops = async (req, res) => {
-  console.log("called");
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: req.id,
-      },
-      include: {
-        workshops: true,
-      },
-    });
-    if (!user) {
-      return res.status(409).json({
-        status: "error",
-        message: "Invalid User",
-      });
-    }
-    const workshopsData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "workshops.json"), "utf-8"),
-    );
-    // const workshopsData = JSON.parse(
-    // fs.readFileSync("workshops.json", "utf-8")
-    // );
-    console.log(workshopsData);
-    const workshops = user.workshops.map((workshop) => {
-      return {
-        workshopId: workshop.workshopId,
-        workshopName: workshopsData[workshop.workshopId.toString()],
-      };
-    });
-    console.log(workshops);
-    return res.status(200).json({
-      status: "success",
-      message: "Workshop fetched successfully",
-      data: {
-        workshops: workshops,
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: "error",
-      message: error.message,
-      details: error,
-    });
   }
 };

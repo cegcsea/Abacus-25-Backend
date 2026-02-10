@@ -35,7 +35,7 @@ import {
   eventRegister,
   getEvents,
   workshopRegister,
-  getWorkshops,
+  bulkWorkshopPaymentVerify,
   verifyWorkshopPaymentDetails,
   workshopPaymentScreenshot,
   verifyEventPaymentDetails,
@@ -71,12 +71,8 @@ router.post(
   workshopRegisterValidation,
   workshopRegister,
 );
-router.post(
-  "/workshop-payment",
-  auth,
-  workshopPaymentValidation,
-  workshopPaymentScreenshot,
-);
+// Bulk workshop payment with FormData
+router.post("/workshop/bulk-payment", auth, bulkWorkshopPaymentVerify);
 router.post(
   "/verify-workshop-payment-details",
   auth,

@@ -139,7 +139,6 @@ export const Register = async (req, res) => {
           college: req.body.college,
           password: hashedPassword,
           referralCode: req.body.referralCode || null,
-          //accomodation: req.body.accomodation,
         },
       });
 

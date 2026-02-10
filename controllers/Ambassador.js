@@ -13,7 +13,9 @@ export const getAmbassadorStatus = async (req, res) => {
       return res.status(200).json({
         status: "OK",
         isAmbassador: false,
-        message: "User is not a campus ambassador",
+        isEligible: false,
+        workshopReferrals: 0,
+        message: "User is not a student ambassador",
       });
     }
 
@@ -34,13 +36,17 @@ export const getAmbassadorStatus = async (req, res) => {
       return res.status(200).json({
         status: "OK",
         isAmbassador: false,
-        message: "User is not a campus ambassador",
+        isEligible: false,
+        workshopReferrals: 0,
+        message: "User is not a student ambassador",
       });
     }
 
     return res.status(200).json({
       status: "OK",
       isAmbassador: true,
+      isEligible: ambassador.isEligible,
+      workshopReferrals: ambassador.workshopReferrals,
       ambassador: {
         ...ambassador,
         referralsNeeded: Math.max(0, 5 - ambassador.workshopReferrals),

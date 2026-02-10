@@ -58,11 +58,7 @@ import {
   registerCaFromUser,
 } from "../controllers/admin.js";
 
-import {
-  getEvents,
-  getWorkshops,
-  workshopPaymentScreenshot,
-} from "../controllers/Event.js";
+import { getEvents, workshopPaymentScreenshot } from "../controllers/Event.js";
 import { profile } from "../controllers/Auth.js";
 
 const router = express.Router();
@@ -158,7 +154,7 @@ router.get("/referral-code-details", auth, referralCodeDetails);
 router.get("/fetch-all-users", auth, fetchAllUsers);
 router.get("/send-olpc-link", auth, sendOlpcLink);
 
-// Campus Ambassador monitoring routes
+// Student Ambassador monitoring routes
 router.post("/get-my-referral-code", auth, getMyReferralCode);
 router.post("/get-ambassador-stats", auth, getAmbassadorStats);
 router.post("/check-ca-events", auth, checkCA20Events);

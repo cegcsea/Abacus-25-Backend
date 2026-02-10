@@ -326,54 +326,6 @@ const querySchema = joi.object({
   }),
 });
 
-export const bulkWorkshopRegisterSchema = joi.object({
-  workshopIds: joi
-    .array()
-    .items(joi.number().integer().positive().required())
-    .min(1)
-    .required()
-    .messages({
-      "array.base": "workshopIds must be an array",
-      "array.min": "You must provide at least one workshop ID",
-      "number.base": "Each workshop ID must be a number",
-      "number.integer": "Each workshop ID must be an integer",
-      "number.positive": "Each workshop ID must be positive",
-    }),
-});
-
-export const bulkWorkshopRegisterValidation = (req, res, next) => {
-  const { error } = bulkWorkshopRegisterSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({
-      status: "error",
-      error: "Bad request",
-      message: error.details[0].message,
-    });
-  }
-  next();
-};
-
-// const accomodationDetailsSchema = joi.object({
-//   day0: joi.boolean().required().messages({
-//     "boolean.empty": "Day 0 choice is required",
-//   }),
-//   day1: joi.boolean().required().messages({
-//     "boolean.empty": "Day 1 choice is required",
-//   }),
-//   day2: joi.boolean().required().messages({
-//     "boolean.empty": "Day 2 choice is required",
-//   }),
-//   day3: joi.boolean().required().messages({
-//     "boolean.empty": "Day 3 choice is required",
-//   }),
-//   food: joi.boolean().required().messages({
-//     "boolean.empty": "Food choice is required",
-//   }),
-//   amount: joi.number().required().messages({
-//     "number.base": "Year must be a number",
-//     "number.empty": "Year is required",
-//   }),
-// });
 // Validation functions
 export const getRegistrationLinkValidation = (req, res, next) => {
   const { error } = getRegistrationLinkSchema.validate(req.body);
