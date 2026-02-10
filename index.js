@@ -11,7 +11,6 @@ config();
 
 console.log("APP ENTRY FILE LOADED");
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,10 +18,24 @@ console.log("Current Directory:", __dirname);
 
 const app = express();
 const prisma = new PrismaClient();
+
+app.use(
+  cors({
+    origin: [
+      "https://www.abacus.org.in",
+      "https://abacus.org.in",
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:8080",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "token", "Authorization"],
+    credentials: true,
+  }),
+);
+
 //Serve the images folder as a static directory
 app.use("/images", express.static(path.join(__dirname, "images")));
-
-app.use(cors());
 
 app.use(express.json());
 app.use(morgan("dev"));

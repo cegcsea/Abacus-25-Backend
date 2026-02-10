@@ -25,7 +25,11 @@ import {
   postQuery,
 } from "../controllers/Auth.js";
 import { getAmbassadorStatus } from "../controllers/Ambassador.js";
-import { registerCaFromUser, getMyReferralCode } from "../controllers/admin.js";
+import {
+  registerCaFromUser,
+  getMyReferralCode,
+  checkCA20Events,
+} from "../controllers/admin.js";
 import {
   eventRegisterValidation,
   workshopRegisterValidation,
