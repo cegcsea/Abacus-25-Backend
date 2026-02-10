@@ -60,3 +60,40 @@ export const getAmbassadorStatus = async (req, res) => {
     });
   }
 };
+
+
+export const getAllAmbassadors = async (req, res) => {
+  console.log("GET ALL AMBASSADORS HIT"); 
+  try {
+    const ambassadors = await prisma.campusAmbassador.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        college: true,
+        referralCode: true,
+        isEligible: true,
+        workshopReferrals: true,
+        eventReferrals: true,
+        workshopsClaimed: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      status: "OK",
+      count: ambassadors.length,
+      ambassadors,
+    });
+  } catch (error) {
+  console.error("GET ALL AMBASSADORS ERROR:", error);
+
+  return res.status(500).json({
+    status: "error",
+    message: error.message,
+  });
+}
+};

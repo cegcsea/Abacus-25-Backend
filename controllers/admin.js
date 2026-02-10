@@ -1318,7 +1318,7 @@ export const getMyReferralCode = async (req, res) => {
 
 export const getAmbassadorStats = async (req, res) => {
   try {
-    const { referralCode } = req.body;
+    const { referralCode } = req.params;
 
     if (!referralCode) {
       return res.status(400).json({ message: "referralCode required" });

@@ -59,6 +59,8 @@ import {
 import { getEvents, workshopPaymentScreenshot } from "../controllers/Event.js";
 import { profile } from "../controllers/Auth.js";
 
+import { getAllAmbassadors } from "../controllers/Ambassador.js";
+
 const router = express.Router();
 
 // Define your routes here
@@ -156,5 +158,12 @@ router.get("/send-olpc-link", auth, sendOlpcLink);
 router.post("/get-ambassador-stats", auth, getAmbassadorStats);
 // Removed check-ca-events - moved to AuthRoutes.js (line 158 removed)
 router.post("/check-ca-workshop", auth, checkCAWorkshop);
+
+router.get("/ambassadors", getAllAmbassadors);
+router.get(
+  "/ambassador/:referralCode",
+  getAmbassadorStats
+);
+
 
 export default router;
