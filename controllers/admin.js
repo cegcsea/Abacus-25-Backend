@@ -1395,7 +1395,8 @@ export const getAmbassadorStats = async (req, res) => {
 
 export const checkCA20Events = async (req, res) => {
   try {
-    const { userId } = req.body;
+    // Use authenticated user's ID from token for security
+    const userId = req.id;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

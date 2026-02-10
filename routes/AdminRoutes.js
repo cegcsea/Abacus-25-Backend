@@ -51,11 +51,9 @@ import {
   referralCodeDetails,
   fetchAllUsers,
   sendOlpcLink,
-  getMyReferralCode,
   getAmbassadorStats,
   checkCA20Events,
   checkCAWorkshop,
-  registerCaFromUser,
 } from "../controllers/admin.js";
 
 import { getEvents, workshopPaymentScreenshot } from "../controllers/Event.js";
@@ -155,10 +153,8 @@ router.get("/fetch-all-users", auth, fetchAllUsers);
 router.get("/send-olpc-link", auth, sendOlpcLink);
 
 // Student Ambassador monitoring routes
-router.post("/get-my-referral-code", auth, getMyReferralCode);
 router.post("/get-ambassador-stats", auth, getAmbassadorStats);
-router.post("/check-ca-events", auth, checkCA20Events);
+// Removed check-ca-events - moved to AuthRoutes.js (line 158 removed)
 router.post("/check-ca-workshop", auth, checkCAWorkshop);
-router.post("/register-ca-from-user", auth, registerCaFromUser);
 
 export default router;

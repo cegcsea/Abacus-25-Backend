@@ -25,6 +25,7 @@ import {
   postQuery,
 } from "../controllers/Auth.js";
 import { getAmbassadorStatus } from "../controllers/Ambassador.js";
+import { registerCaFromUser, getMyReferralCode } from "../controllers/admin.js";
 import {
   eventRegisterValidation,
   workshopRegisterValidation,
@@ -100,5 +101,10 @@ router.post(
 router.put("/update-profile", auth, updateProfileValidation, updateProfile);
 router.post("/post-query", queryValidation, postQuery);
 router.get("/ambassador-status", auth, getAmbassadorStatus);
+
+// Campus Ambassador Routes
+router.post("/register-ca-from-user", auth, registerCaFromUser);
+router.post("/get-my-referral-code", auth, getMyReferralCode);
+router.post("/check-ca-events", auth, checkCA20Events);
 
 export default router;
