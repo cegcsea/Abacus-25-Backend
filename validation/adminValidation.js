@@ -128,15 +128,15 @@ const workshopListSchema = Joi.object({
   workshopId: Joi.number()
     .strict()
     .precision(0)
-    .min(1)
+    .min(0)
     .max(3)
     .required()
     .messages({
       "any.required": "Workshop Id is required",
       "number.base": "Workshop Id must be a number",
       "number.precision": "Workshop Id must be a number",
-      "number.min": "Workshop Id should range between 1 and 3",
-      "number.max": "Workshop Id should range between 1 and 3",
+      "number.min": "Workshop Id should range between 0 and 3",
+      "number.max": "Workshop Id should range between 0 and 3",
     }),
 });
 
